@@ -1,15 +1,64 @@
-*.iml
-.gradle
+# ==========================================
+# Android Studio & Gradle Git Ignore Template
+# ==========================================
+
+# Build files
+/build/
+*/build/
+
+# Local configuration
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+
+# Gradle cache
+.gradle/
+gradle-app.setting
+**/gradle-app.setting
+
+# Log files
+*.log
+
+# Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Keystore files (bảo mật)
+*.jks
+*.keystore
+
+# User-specific files
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# External native build folders
+.cxx/
+
+# Signing and key-related
+key.properties
+
+# Misc
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+# Captured screenshots / test outputs
+captures/
+
+# Google services (nếu bạn dùng Firebase)
+# => Không commit file chứa thông tin cá nhân
+google-services.json
+
+# Jetpack Compose previews & build intermediates
+.intermediates/
