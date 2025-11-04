@@ -1,27 +1,37 @@
-# Android Studio
+# ========================================
+# Android Studio / IntelliJ
+# ========================================
 .idea/
+*.iml
 .gradle/
 local.properties
 
-# Build output
-build/
-*/build/
+# ========================================
+# Build files
+# ========================================
+/build/
+/app/build/
+/captures/
+/outputs/
 
-# Log, cache, tmp
+# ========================================
+# Firebase / Google services
+# ========================================
+app/google-services.json
+app/google.json
+google-services.json
+google.json
+
+# ========================================
+# Log, cache, temp files
+# ========================================
 *.log
 *.tmp
-*.bak
-*.orig
-*.swp
-.cxx/
-captures/
-
-# Keys, secrets
-*.jks
-*.keystore
-key.properties
-google-services.json
-
-# System files
+*.temp
 .DS_Store
+
+# ========================================
+# OS generated files
+# ========================================
 Thumbs.db
+ehthumbs.db
