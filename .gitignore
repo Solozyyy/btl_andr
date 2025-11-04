@@ -17,10 +17,9 @@ local.properties
 # ========================================
 # Firebase / Google services
 # ========================================
-app/google-services.json
-app/google.json
-google-services.json
-google.json
+**/google-services.json
+**/google.json
+
 
 # ========================================
 # Log, cache, temp files
