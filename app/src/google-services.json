@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "791976332183",
+    "project_id": "timermanager-40d80",
+    "storage_bucket": "timermanager-40d80.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:791976332183:android:660989050ab279c65952d2",
+        "android_client_info": {
+          "package_name": "com.example.btlandr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_Qs4wPp0S8jp5aW43akY7Fpo5SEEs9VY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
