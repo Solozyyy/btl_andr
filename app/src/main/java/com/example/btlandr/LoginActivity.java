@@ -8,9 +8,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
 
+    FirebaseAuth auth;
     EditText etEmail, etPassword;
     Button btnLogin;
     TextView tvRegister;
@@ -19,6 +21,9 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
+
+        // Firebase database
+        auth = FirebaseAuth.getInstance();
 
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
@@ -30,17 +35,16 @@ public class LoginActivity extends AppCompatActivity {
             String email = etEmail.getText().toString().trim();
             String pass = etPassword.getText().toString().trim();
 
-            // Giả lập: tài khoản mặc định để test
-            if (email.equals("admin") && pass.equals("123")) {
-                Toast.makeText(this, "Login thành công!", Toast.LENGTH_SHORT).show();
-
-                // Chuyển sang trang chủ
-                Intent i = new Intent(LoginActivity.this, HomeActivity.class);
-                startActivity(i);
+            // Đăng nhập bàng email, pass trên Firebase
+            auth.signInWithEmailAndPassword(email, pass)
+            .addOnSuccessListener(result -> {
+                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, ScheduleActivity.class));
                 finish();
-            } else {
+            })
+            .addOnFailureListener(e -> {
                 Toast.makeText(this, "Sai email hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
-            }
+            });
         });
 
         // Chuyển sang màn hình đăng ký
