@@ -1,64 +1,32 @@
 package com.example.btlandr;
 
-import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
-import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.btlandr.Event;
+import android.app.*;
+import android.os.*;
+import android.widget.*;
+import android.content.Intent;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
-
-import java.util.Map;
+import java.util.*;
 
 public class ScheduleActivity extends AppCompatActivity {
 
-    FirebaseFirestore db;
-    String uid;
+    private FirebaseFirestore db;
+    private FirebaseAuth auth;
+    private String uid;
 
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Reminder Channel";
-            String description = "Nhắc nhở lịch học và sự kiện";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel("reminder_channel", name, importance);
-            channel.setDescription(description);
+    private RecyclerView recyclerView;
+    private EventAdapter adapter;
+    private List<Event> eventList = new ArrayList<>();
 
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
-        }
-    }
+    private EditText titleInput, noteInput;
+    private Button startTimeButton, endTimeButton, saveEventButton;
 
-    @SuppressLint("ScheduleExactAlarm")
-    private void scheduleReminder(String title, String note, long timeInMillis) {
-        Log.d("ALARM_TEST", "Đặt nhắc: " + title + " vào " + timeInMillis);
-
-        Intent intent = new Intent(this, ReminderReceiver.class);
-        intent.putExtra("title", title);
-        intent.putExtra("note", note);
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this,
-                (int) System.currentTimeMillis(),
-                intent,
-                PendingIntent.FLAG_IMMUTABLE
-        );
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager != null) {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-        }
-    }
+    private long startTimeMillis = 0;
+    private long endTimeMillis = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,69 +34,169 @@ public class ScheduleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_schedule);
 
         db = FirebaseFirestore.getInstance();
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null) {
-            uid = auth.getCurrentUser().getUid();
-            loadEvents();
-        } else {
-            Toast.makeText(this, "Bạn chưa đăng nhập!", Toast.LENGTH_SHORT).show();
-            finish(); // hoặc mở lại màn hình đăng nhập
-            return;
-        }
+        auth = FirebaseAuth.getInstance();
+        uid = auth.getCurrentUser().getUid();
 
-        // Lấy danh sách sự kiện khi mở app
-        loadEvents();
+        titleInput = findViewById(R.id.titleInput);
+        noteInput = findViewById(R.id.noteInput);
+        startTimeButton = findViewById(R.id.startTimeButton);
+        endTimeButton = findViewById(R.id.endTimeButton);
+        saveEventButton = findViewById(R.id.saveEventButton);
 
-        createNotificationChannel();
+        recyclerView = findViewById(R.id.eventRecycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        Button logoutButton = findViewById(R.id.logoutButton);
-        logoutButton.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
+        adapter = new EventAdapter(eventList, new EventAdapter.OnEventActionListener() {
+            @Override
+            public void onDelete(String eventId) {
+                deleteEvent(eventId);
+            }
+
+            @Override
+            public void onDetail(Event event) {
+                Intent i = new Intent(ScheduleActivity.this, EventDetailActivity.class);
+                i.putExtra("title", event.getTitle());
+                i.putExtra("note", event.getNote());
+                i.putExtra("start", event.getStartTime());
+                i.putExtra("end", event.getEndTime());
+                i.putExtra("category", event.getCategory());
+                startActivity(i);
+            }
         });
 
+        recyclerView.setAdapter(adapter);
+
+        startTimeButton.setOnClickListener(v -> pickDateTime(true));
+        endTimeButton.setOnClickListener(v -> pickDateTime(false));
+
+        saveEventButton.setOnClickListener(v -> {
+            String title = titleInput.getText().toString();
+            String note = noteInput.getText().toString();
+
+            if (title.isEmpty() || startTimeMillis == 0) {
+                Toast.makeText(this, "Vui lòng nhập tiêu đề và chọn thời gian!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Event event = new Event(title, note, startTimeMillis, endTimeMillis, "Cá nhân");
+            addEvent(event);
+            scheduleReminder(event.getTitle(), event.getNote(), event.getStartTime());
+        });
+
+        Button shareButton = findViewById(R.id.shareButton);
+        shareButton.setOnClickListener(v -> {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            String shareText = "Mã chia sẻ lịch của tôi: " + uid;
+            Toast.makeText(this, shareText, Toast.LENGTH_LONG).show();
+
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_TEXT, shareText);
+            intent.setType("text/plain");
+            startActivity(Intent.createChooser(intent, "Chia sẻ qua..."));
+        });
+
+        loadEvents();
+        createNotificationChannel();
     }
 
-    // Hàm thêm sự kiện mới
+    private void pickDateTime(boolean isStart) {
+        Calendar now = Calendar.getInstance();
+
+        DatePickerDialog dateDialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    TimePickerDialog timeDialog = new TimePickerDialog(
+                            this,
+                            (timeView, hour, minute) -> {
+                                Calendar chosen = Calendar.getInstance();
+                                chosen.set(year, month, dayOfMonth, hour, minute, 0);
+
+                                if (isStart) {
+                                    startTimeMillis = chosen.getTimeInMillis();
+                                    startTimeButton.setText("Bắt đầu: " + chosen.getTime().toString());
+                                } else {
+                                    endTimeMillis = chosen.getTimeInMillis();
+                                    endTimeButton.setText("Kết thúc: " + chosen.getTime().toString());
+                                }
+                            },
+                            now.get(Calendar.HOUR_OF_DAY),
+                            now.get(Calendar.MINUTE),
+                            true
+                    );
+                    timeDialog.show();
+                },
+                now.get(Calendar.YEAR),
+                now.get(Calendar.MONTH),
+                now.get(Calendar.DAY_OF_MONTH)
+        );
+        dateDialog.show();
+    }
+
     private void addEvent(Event event) {
-        db.collection("UserData").document(uid).collection("events")
+        db.collection("UserAccount").document(uid).collection("events")
                 .add(event)
-                .addOnSuccessListener(doc -> {
-                    Toast.makeText(this, "Đã thêm sự kiện!", Toast.LENGTH_SHORT).show();
-                })
+                .addOnSuccessListener(doc -> Toast.makeText(this, "Đã lưu sự kiện!", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    // Hàm tải danh sách sự kiện (Realtime)
     private void loadEvents() {
-        db.collection("UserData").document(uid).collection("events")
+        db.collection("UserAccount").document(uid).collection("events")
                 .orderBy("startTime", Query.Direction.ASCENDING)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Log.e("Firestore", "Lỗi tải dữ liệu: ", error);
-                        return;
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) return;
+                    eventList.clear();
+                    for (QueryDocumentSnapshot doc : snapshots) {
+                        Event event = doc.toObject(Event.class);
+                        event.setId(doc.getId());
+                        eventList.add(event);
                     }
-                    if (value != null) {
-                        for (QueryDocumentSnapshot doc : value) {
-                            Event e = doc.toObject(Event.class);
-                            Log.d("Event", e.getTitle() + " | " + e.getCategory());
-                        }
-                    }
+                    adapter.notifyDataSetChanged();
                 });
     }
 
-    // Hàm cập nhật sự kiện
-    private void updateEvent(String eventId, Map<String, Object> updates) {
-        db.collection("UserData").document(uid).collection("events").document(eventId)
-                .update(updates)
-                .addOnSuccessListener(a -> Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show());
-    }
-
-    // Hàm xóa sự kiện
     private void deleteEvent(String eventId) {
-        db.collection("UserData").document(uid).collection("events").document(eventId)
+        db.collection("UserAccount").document(uid).collection("events").document(eventId)
                 .delete()
                 .addOnSuccessListener(a -> Toast.makeText(this, "Đã xóa!", Toast.LENGTH_SHORT).show());
+    }
+
+    // 🔔 Đặt nhắc
+    private void scheduleReminder(String title, String note, long timeInMillis) {
+        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!am.canScheduleExactAlarms()) {
+                Toast.makeText(this, "Thiếu quyền đặt báo nhắc chính xác", Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
+
+        Intent intent = new Intent(this, ReminderReceiver.class);
+        intent.putExtra("title", title);
+        intent.putExtra("note", note);
+
+        PendingIntent pi = PendingIntent.getBroadcast(
+                this,
+                (int) System.currentTimeMillis(),
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
+        );
+
+        am.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pi);
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "reminder_channel",
+                    "Reminder Channel",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Nhắc nhở lịch học và sự kiện");
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) manager.createNotificationChannel(channel);
+        }
     }
 }
