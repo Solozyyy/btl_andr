@@ -18,6 +18,9 @@
         <activity android:name=".RegisterActivity" />
         <activity android:name=".MainActivity"/>
         <activity android:name=".EventDetailActivity" />
+        <activity android:name=".PersonalTaskActivity" />
+        <activity android:name=".GroupTaskActivity" />
+        <activity android:name=".AddPersonalTaskActivity" />
         <activity
             android:name=".LoginActivity"
             android:exported="true">

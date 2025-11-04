@@ -39,7 +39,8 @@ public class LoginActivity extends AppCompatActivity {
             auth.signInWithEmailAndPassword(email, pass)
             .addOnSuccessListener(result -> {
                 Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, ScheduleActivity.class));
+                startActivity(new Intent(this, MainActivity.class));
+//                startActivity(new Intent(this, ScheduleActivity.class));
                 finish();
             })
             .addOnFailureListener(e -> {
