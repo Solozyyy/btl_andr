@@ -1,15 +1,20 @@
 package com.example.btlandr;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
 
@@ -40,11 +45,57 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Event event = eventList.get(position);
+        long now = System.currentTimeMillis();
 
+        // Set title và category
         holder.txtTitle.setText(event.getTitle());
-        holder.txtNote.setText(event.getNote());
         holder.txtCategory.setText(event.getCategory());
 
+        // Format và hiển thị thời gian
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault());
+        String timeFormatted = sdf.format(new Date(event.getStartTime()));
+        holder.txtTime.setText(timeFormatted);
+
+        // Xử lý note (ẩn nếu rỗng)
+        if (event.getNote() == null || event.getNote().trim().isEmpty()) {
+            holder.txtNote.setVisibility(View.GONE);
+        } else {
+            holder.txtNote.setVisibility(View.VISIBLE);
+            holder.txtNote.setText(event.getNote());
+        }
+
+        // Xác định trạng thái và đổi màu
+        String status;
+        int statusColor;
+        int statusBgColor;
+        int barColor;
+
+        if (event.getEndTime() < now) {
+            // Đã qua
+            status = "Đã qua";
+            statusColor = Color.parseColor("#757575");
+            statusBgColor = Color.parseColor("#F5F5F5");
+            barColor = Color.parseColor("#9E9E9E");
+        } else if (event.getStartTime() <= now && event.getEndTime() >= now) {
+            // Đang diễn ra
+            status = "Đang diễn ra";
+            statusColor = Color.parseColor("#FF5722");
+            statusBgColor = Color.parseColor("#FFEBEE");
+            barColor = Color.parseColor("#FF5722");
+        } else {
+            // Sắp tới
+            status = "Sắp tới";
+            statusColor = Color.parseColor("#4CAF50");
+            statusBgColor = Color.parseColor("#E8F5E9");
+            barColor = Color.parseColor("#2196F3");
+        }
+
+        holder.txtStatus.setText(status);
+        holder.txtStatus.setTextColor(statusColor);
+        holder.txtStatus.setBackgroundColor(statusBgColor);
+        holder.colorBar.setBackgroundColor(barColor);
+
+        // Set click listeners
         holder.btnDelete.setOnClickListener(v -> {
             if (listener != null) listener.onDelete(event.getId());
         });
@@ -52,6 +103,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         holder.btnDetail.setOnClickListener(v -> {
             if (listener != null) listener.onDetail(event);
         });
+    }
+
+    public void setEventList(List<Event> newList) {
+        this.eventList.clear();
+        this.eventList.addAll(newList);
+        notifyDataSetChanged();
     }
 
     // 🧩 3. Trả về số lượng phần tử
@@ -62,16 +119,20 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
     // 🧩 4. ViewHolder ánh xạ với item_event.xml
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtTitle, txtNote, txtCategory;
-        Button btnDelete, btnDetail;
+        TextView txtTitle, txtNote, txtCategory, txtTime, txtStatus;
+        MaterialButton btnDelete, btnDetail;
+        View colorBar;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             txtTitle = itemView.findViewById(R.id.txtTitle);
             txtNote = itemView.findViewById(R.id.txtNote);
             txtCategory = itemView.findViewById(R.id.txtCategory);
+            txtTime = itemView.findViewById(R.id.txtTime);
+            txtStatus = itemView.findViewById(R.id.txtStatus);
             btnDelete = itemView.findViewById(R.id.btnDelete);
             btnDetail = itemView.findViewById(R.id.btnDetail);
+            colorBar = itemView.findViewById(R.id.colorBar);
         }
     }
 }
