@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/titleInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tiêu đề task"
+            android:inputType="textCapSentences"
+            android:padding="12dp"
+            android:background="@drawable/edittext_bg"/>
+
+        <EditText
+            android:id="@+id/noteInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ghi chú (tùy chọn)"
+            android:inputType="textMultiLine"
+            android:padding="12dp"
+            android:layout_marginTop="10dp"
+            android:minHeight="80dp"
+            android:background="@drawable/edittext_bg"/>
+
+        <Button
+            android:id="@+id/startTimeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chọn thời gian bắt đầu"
+            android:layout_marginTop="16dp" />
+
+        <Button
+            android:id="@+id/endTimeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chọn thời gian kết thúc"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/saveEventButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lưu task nhóm"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#03A9F4"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+</ScrollView>

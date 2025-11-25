@@ -63,7 +63,7 @@ public class RegisterActivity extends AppCompatActivity {
                     .set(userData)
                     .addOnSuccessListener(a -> {
                         Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(this, ScheduleActivity.class));
+                        startActivity(new Intent(this, LoginActivity.class));
                         finish();
                     });
                 })
