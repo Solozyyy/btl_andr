@@ -1,0 +1,271 @@
+package com.example.btlandr;
+
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.*;
+import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.*;
+import java.util.*;
+
+public class GroupDetailActivity extends AppCompatActivity {
+
+    private TextView groupNameText, adminEmailText;
+    private Button deleteGroupButton, addMemberButton, addGroupTaskButton;
+    private ListView membersListView;
+
+    private LinearLayout containerOngoing, containerUpcoming, containerPast;
+
+    private String groupId, adminId, adminEmail;
+    private FirebaseFirestore db;
+    private String currentUid;
+    private boolean isAdmin;
+
+    private List<String> memberUids = new ArrayList<>();
+    private List<String> memberInfos = new ArrayList<>();
+    private MemberAdapter adapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_group_detail);
+
+        db = FirebaseFirestore.getInstance();
+        currentUid = FirebaseAuth.getInstance().getUid();
+
+        groupNameText = findViewById(R.id.groupNameText);
+        adminEmailText = findViewById(R.id.adminEmailText);
+        deleteGroupButton = findViewById(R.id.deleteGroupButton);
+        addMemberButton = findViewById(R.id.addMemberButton);
+        addGroupTaskButton = findViewById(R.id.addGroupTaskButton);
+        membersListView = findViewById(R.id.membersListView);
+
+        containerOngoing = findViewById(R.id.containerOngoing);
+        containerUpcoming = findViewById(R.id.containerUpcoming);
+        containerPast = findViewById(R.id.containerPast);
+
+        // Nhận dữ liệu từ Intent
+        groupId = getIntent().getStringExtra("groupId");
+        adminId = getIntent().getStringExtra("adminId");
+        adminEmail = getIntent().getStringExtra("adminEmail");
+        String groupName = getIntent().getStringExtra("groupName");
+
+        groupNameText.setText("Tên nhóm: " + groupName);
+        adminEmailText.setText("Quản lý: " + adminEmail);
+
+        isAdmin = currentUid.equals(adminId);
+
+        if (!isAdmin) {
+            addMemberButton.setVisibility(Button.GONE);
+            deleteGroupButton.setVisibility(Button.GONE);
+            addGroupTaskButton.setVisibility(Button.GONE);
+        }
+
+        addMemberButton.setOnClickListener(v -> showAddMemberDialog());
+        deleteGroupButton.setOnClickListener(v -> confirmDeleteGroup());
+        addGroupTaskButton.setOnClickListener(v -> {
+            Intent i = new Intent(this, AddGroupTaskActivity.class);
+            i.putExtra("groupId", groupId);
+            startActivity(i);
+        });
+
+        adapter = new MemberAdapter(this, memberUids, memberInfos, isAdmin, this::confirmRemoveMember);
+        membersListView.setAdapter(adapter);
+
+        loadMembers();
+        loadGroupTasks(); // 🔹 Realtime listener task
+    }
+
+    // -------------------- 🔸 LOAD MEMBERS --------------------
+    private void loadMembers() {
+        db.collection("Groups").document(groupId)
+                .addSnapshotListener((doc, e) -> {
+                    if (e != null || doc == null || !doc.exists()) return;
+                    List<String> members = (List<String>) doc.get("members");
+                    memberUids.clear();
+                    memberInfos.clear();
+
+                    if (members != null) {
+                        for (String uid : members) {
+                            db.collection("UserAccount").document(uid)
+                                    .get()
+                                    .addOnSuccessListener(userDoc -> {
+                                        String name = userDoc.getString("username");
+                                        String email = userDoc.getString("email");
+                                        memberUids.add(uid);
+                                        memberInfos.add((name != null ? name : "Ẩn danh") + " (" + email + ")");
+                                        adapter.notifyDataSetChanged();
+                                    });
+                        }
+                    }
+                });
+    }
+
+    // -------------------- 🔸 ADD MEMBER --------------------
+    private void showAddMemberDialog() {
+        final EditText emailInput = new EditText(this);
+        emailInput.setHint("Nhập email thành viên");
+        emailInput.setPadding(32, 32, 32, 32);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Thêm thành viên mới")
+                .setView(emailInput)
+                .setPositiveButton("Thêm", (d, w) -> {
+                    String email = emailInput.getText().toString().trim();
+                    if (email.isEmpty()) {
+                        Toast.makeText(this, "Vui lòng nhập email!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    db.collection("UserAccount")
+                            .whereEqualTo("email", email)
+                            .get()
+                            .addOnSuccessListener(qs -> {
+                                if (qs.isEmpty()) {
+                                    Toast.makeText(this, "Không tìm thấy người dùng!", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    String newUid = qs.getDocuments().get(0).getId();
+                                    addMemberToGroup(newUid);
+                                }
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .setNegativeButton("Huỷ", null)
+                .show();
+    }
+
+    private void addMemberToGroup(String newUid) {
+        if (memberUids.contains(newUid)) {
+            Toast.makeText(this, "Người này đã có trong nhóm!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        db.collection("Groups").document(groupId)
+                .update("members", FieldValue.arrayUnion(newUid))
+                .addOnSuccessListener(a -> Toast.makeText(this, "Đã thêm thành viên!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void confirmRemoveMember(String uid, String info) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xóa thành viên")
+                .setMessage("Bạn có chắc muốn xóa " + info + " khỏi nhóm không?")
+                .setPositiveButton("Xóa", (d, w) -> removeMember(uid))
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void removeMember(String uidToRemove) {
+        // ✅ Không cho phép admin tự xóa chính mình
+        if (uidToRemove.equals(FirebaseAuth.getInstance().getUid())) {
+            Toast.makeText(this, "Không thể xóa quản lý nhóm!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // ✅ Không cho phép người dùng tự xóa chính mình
+        if (uidToRemove.equals(currentUid)) {
+            Toast.makeText(this, "Không thể tự xóa bản thân khỏi nhóm!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DocumentReference groupRef = db.collection("Groups").document(groupId);
+
+        groupRef.update("members", FieldValue.arrayRemove(uidToRemove))
+                .addOnSuccessListener(a -> {
+                    Toast.makeText(this, "Đã xóa thành viên!", Toast.LENGTH_SHORT).show();
+                    //showMembersList(); // Reload danh sách sau khi xóa
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    // -------------------- 🔸 DELETE GROUP --------------------
+    private void confirmDeleteGroup() {
+        new AlertDialog.Builder(this)
+                .setTitle("Xoá nhóm?")
+                .setMessage("Bạn có chắc muốn xoá nhóm này không?")
+                .setPositiveButton("Xoá", (d, w) -> deleteGroup())
+                .setNegativeButton("Huỷ", null)
+                .show();
+    }
+
+    private void deleteGroup() {
+        db.collection("Groups").document(groupId)
+                .delete()
+                .addOnSuccessListener(a -> {
+                    Toast.makeText(this, "Đã xoá nhóm!", Toast.LENGTH_SHORT).show();
+                    finish(); // ✅ Quay lại trang trước
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    // -------------------- 🔸 LOAD GROUP TASKS --------------------
+    private void loadGroupTasks() {
+        db.collection("Groups").document(groupId).collection("tasks")
+                .orderBy("startTime", Query.Direction.ASCENDING)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null) return;
+
+                    long now = System.currentTimeMillis();
+
+                    containerOngoing.removeAllViews();
+                    containerUpcoming.removeAllViews();
+                    containerPast.removeAllViews();
+
+                    for (QueryDocumentSnapshot doc : snapshots) {
+                        Event ev = doc.toObject(Event.class);
+                        String eventId = doc.getId();
+
+                        // Tạo layout item cho mỗi task
+                        LinearLayout itemLayout = new LinearLayout(this);
+                        itemLayout.setOrientation(LinearLayout.HORIZONTAL);
+                        itemLayout.setPadding(16, 8, 16, 8);
+
+                        TextView titleView = new TextView(this);
+                        titleView.setText("• " + ev.getTitle() + " (" + new Date(ev.getStartTime()) + ")");
+                        titleView.setTextSize(15);
+                        titleView.setLayoutParams(new LinearLayout.LayoutParams(
+                                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+
+                        itemLayout.addView(titleView);
+
+                        // 🔹 Nút xóa (chỉ admin thấy)
+                        if (isAdmin) {
+                            ImageButton deleteBtn = new ImageButton(this);
+                            deleteBtn.setImageResource(android.R.drawable.ic_delete);
+                            deleteBtn.setBackground(null);
+                            deleteBtn.setOnClickListener(v -> confirmDeleteTask(eventId, ev.getTitle()));
+                            itemLayout.addView(deleteBtn);
+                        }
+
+                        // Phân loại theo thời gian
+                        if (ev.getEndTime() < now) {
+                            containerPast.addView(itemLayout);
+                        } else if (ev.getStartTime() > now) {
+                            containerUpcoming.addView(itemLayout);
+                        } else {
+                            containerOngoing.addView(itemLayout);
+                        }
+                    }
+                });
+    }
+
+    private void confirmDeleteTask(String taskId, String title) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xóa task")
+                .setMessage("Bạn có chắc muốn xóa \"" + title + "\" khỏi nhóm không?")
+                .setPositiveButton("Xóa", (d, w) -> deleteGroupTask(taskId))
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void deleteGroupTask(String taskId) {
+        db.collection("Groups").document(groupId).collection("tasks").document(taskId)
+                .delete()
+                .addOnSuccessListener(a -> Toast.makeText(this, "Đã xóa task!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+}

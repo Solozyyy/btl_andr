@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="8dp">
+
+    <!-- RecyclerView hiển thị danh sách nhóm quản lý -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerManagedGroups"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"/>
+
+    <!-- Nút tạo nhóm mới -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:contentDescription="Tạo nhóm mới"
+        app:srcCompat="@drawable/outline_group_add_24"
+        app:tint="@android:color/white"
+        app:backgroundTint="#4CAF50"/>
+</FrameLayout>
