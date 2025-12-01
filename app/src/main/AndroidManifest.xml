@@ -37,6 +37,7 @@
         <activity android:name=".GroupTaskActivity" android:exported="false" />
         <activity android:name=".AddGroupTaskActivity" android:exported="false" />
         <activity android:name=".GroupDetailActivity" android:exported="false" />
+        <activity android:name=".GroupChatActivity" android:exported="false" />
 
         <receiver
             android:name=".ReminderReceiver"

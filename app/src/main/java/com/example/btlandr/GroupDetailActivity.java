@@ -12,7 +12,7 @@ import java.util.*;
 public class GroupDetailActivity extends AppCompatActivity {
 
     private TextView groupNameText, adminEmailText;
-    private Button deleteGroupButton, addMemberButton, addGroupTaskButton;
+    private Button deleteGroupButton, addMemberButton, addGroupTaskButton, groupChatButton, renameGroupButton;
     private ListView membersListView;
 
     private LinearLayout containerOngoing, containerUpcoming, containerPast;
@@ -39,6 +39,8 @@ public class GroupDetailActivity extends AppCompatActivity {
         deleteGroupButton = findViewById(R.id.deleteGroupButton);
         addMemberButton = findViewById(R.id.addMemberButton);
         addGroupTaskButton = findViewById(R.id.addGroupTaskButton);
+        groupChatButton = findViewById(R.id.groupChatButton);
+        renameGroupButton = findViewById(R.id.renameGroupButton);
         membersListView = findViewById(R.id.membersListView);
 
         containerOngoing = findViewById(R.id.containerOngoing);
@@ -60,10 +62,18 @@ public class GroupDetailActivity extends AppCompatActivity {
             addMemberButton.setVisibility(Button.GONE);
             deleteGroupButton.setVisibility(Button.GONE);
             addGroupTaskButton.setVisibility(Button.GONE);
+            renameGroupButton.setVisibility(Button.GONE);
         }
 
         addMemberButton.setOnClickListener(v -> showAddMemberDialog());
         deleteGroupButton.setOnClickListener(v -> confirmDeleteGroup());
+        renameGroupButton.setOnClickListener(v -> showRenameGroupDialog());
+        groupChatButton.setOnClickListener(v -> {
+            Intent i = new Intent(this, GroupChatActivity.class);
+            i.putExtra("groupId", groupId);
+            i.putExtra("groupName", getIntent().getStringExtra("groupName"));
+            startActivity(i);
+        });
         addGroupTaskButton.setOnClickListener(v -> {
             Intent i = new Intent(this, AddGroupTaskActivity.class);
             i.putExtra("groupId", groupId);
@@ -82,6 +92,13 @@ public class GroupDetailActivity extends AppCompatActivity {
         db.collection("Groups").document(groupId)
                 .addSnapshotListener((doc, e) -> {
                     if (e != null || doc == null || !doc.exists()) return;
+                    
+                    // Cập nhật tên nhóm realtime
+                    String groupName = doc.getString("groupName");
+                    if (groupName != null) {
+                        groupNameText.setText("Tên nhóm: " + groupName);
+                    }
+                    
                     List<String> members = (List<String>) doc.get("members");
                     memberUids.clear();
                     memberInfos.clear();
@@ -260,6 +277,41 @@ public class GroupDetailActivity extends AppCompatActivity {
                 .setPositiveButton("Xóa", (d, w) -> deleteGroupTask(taskId))
                 .setNegativeButton("Hủy", null)
                 .show();
+    }
+
+    private void showRenameGroupDialog() {
+        if (!isAdmin) {
+            Toast.makeText(this, "Chỉ quản lý nhóm mới có thể đổi tên nhóm", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        EditText input = new EditText(this);
+        input.setText(getIntent().getStringExtra("groupName"));
+        input.setSelection(input.getText().length());
+
+        new AlertDialog.Builder(this)
+                .setTitle("Đổi tên nhóm")
+                .setView(input)
+                .setPositiveButton("Lưu", (dialog, which) -> {
+                    String newName = input.getText().toString().trim();
+                    if (newName.isEmpty()) {
+                        Toast.makeText(GroupDetailActivity.this, "Tên nhóm không được trống", Toast.LENGTH_SHORT).show();
+                    } else {
+                        updateGroupName(newName);
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void updateGroupName(String newName) {
+        db.collection("Groups").document(groupId)
+                .update("groupName", newName)
+                .addOnSuccessListener(a -> {
+                    Toast.makeText(this, "Đã cập nhật tên nhóm!", Toast.LENGTH_SHORT).show();
+                    // Không cần cập nhật thủ công - realtime listener sẽ tự động cập nhật
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void deleteGroupTask(String taskId) {
