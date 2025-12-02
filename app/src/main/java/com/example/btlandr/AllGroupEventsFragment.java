@@ -18,7 +18,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AllGroupEventsFragment extends Fragment {
 
@@ -33,6 +35,9 @@ public class AllGroupEventsFragment extends Fragment {
 
     // Lưu listener registration để hủy khi fragment bị destroy
     private final List<ListenerRegistration> taskListeners = new ArrayList<>();
+
+    // Lưu tất cả tasks từ các group để tránh bị xóa mất
+    private final Map<String, List<Event>> groupTasksMap = new HashMap<>();
 
     @Nullable
     @Override
@@ -80,6 +85,7 @@ public class AllGroupEventsFragment extends Fragment {
             i.putExtra("start", event.getStartTime());
             i.putExtra("end", event.getEndTime());
             i.putExtra("category", event.getCategory());
+            i.putExtra("important", event.isImportant());
             startActivity(i);
         }
     };
@@ -99,12 +105,9 @@ public class AllGroupEventsFragment extends Fragment {
                         reg.remove();
                     }
                     taskListeners.clear();
+                    groupTasksMap.clear();
 
-                    ongoingList.clear();
-                    upcomingList.clear();
-                    pastList.clear();
-
-                    if (groupSnapshots != null) {
+                    if (groupSnapshots != null && !groupSnapshots.isEmpty()) {
                         for (QueryDocumentSnapshot groupDoc : groupSnapshots) {
                             String groupId = groupDoc.getId();
 
@@ -119,36 +122,55 @@ public class AllGroupEventsFragment extends Fragment {
                                             return;
                                         }
 
-                                        // Cập nhật lại danh sách
-                                        ongoingList.clear();
-                                        upcomingList.clear();
-                                        pastList.clear();
-
-                                        long now = System.currentTimeMillis();
-
+                                        // ✅ Lưu tasks của group này vào map
+                                        List<Event> tasksOfThisGroup = new ArrayList<>();
                                         if (taskSnapshots != null) {
                                             for (QueryDocumentSnapshot taskDoc : taskSnapshots) {
                                                 Event eTask = taskDoc.toObject(Event.class);
                                                 eTask.setId(taskDoc.getId());
-
-                                                if (eTask.getEndTime() < now)
-                                                    pastList.add(eTask);
-                                                else if (eTask.getStartTime() <= now && eTask.getEndTime() >= now)
-                                                    ongoingList.add(eTask);
-                                                else
-                                                    upcomingList.add(eTask);
+                                                tasksOfThisGroup.add(eTask);
                                             }
                                         }
+                                        groupTasksMap.put(groupId, tasksOfThisGroup);
 
-                                        adapterOngoing.notifyDataSetChanged();
-                                        adapterUpcoming.notifyDataSetChanged();
-                                        adapterPast.notifyDataSetChanged();
+                                        // ✅ Gộp tất cả tasks từ các groups và phân loại
+                                        updateAllLists();
                                     });
 
                             taskListeners.add(reg);
                         }
+                    } else {
+                        // Không có group nào
+                        updateAllLists();
                     }
                 });
+    }
+
+    // ✅ Phương thức gộp và phân loại tất cả tasks
+    private void updateAllLists() {
+        ongoingList.clear();
+        upcomingList.clear();
+        pastList.clear();
+
+        long now = System.currentTimeMillis();
+
+        // Gộp tất cả tasks từ các groups
+        for (List<Event> tasks : groupTasksMap.values()) {
+            for (Event event : tasks) {
+                if (event.getEndTime() < now) {
+                    pastList.add(event);
+                } else if (event.getStartTime() <= now && event.getEndTime() >= now) {
+                    ongoingList.add(event);
+                } else {
+                    upcomingList.add(event);
+                }
+            }
+        }
+
+        // Cập nhật adapter
+        if (adapterOngoing != null) adapterOngoing.notifyDataSetChanged();
+        if (adapterUpcoming != null) adapterUpcoming.notifyDataSetChanged();
+        if (adapterPast != null) adapterPast.notifyDataSetChanged();
     }
 
     @Override
@@ -158,5 +180,6 @@ public class AllGroupEventsFragment extends Fragment {
             reg.remove();
         }
         taskListeners.clear();
+        groupTasksMap.clear();
     }
 }
