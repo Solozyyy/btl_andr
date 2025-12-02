@@ -39,6 +39,16 @@
             android:backgroundTint="#4CAF50"
             android:textColor="@android:color/white" />
 
+        <!-- Nút vào phòng chat nhóm -->
+        <Button
+            android:id="@+id/groupChatButton"
+            android:text="💬 Vào phòng chat nhóm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#9C27B0"
+            android:textColor="@android:color/white" />
+
         <!-- Danh sách thành viên -->
         <TextView
             android:text="👥 Thành viên:"
@@ -115,13 +125,23 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" />
 
+        <!-- Nút đổi tên nhóm -->
+        <Button
+            android:id="@+id/renameGroupButton"
+            android:text="✏️ Đổi tên nhóm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#FF9800"
+            android:textColor="@android:color/white" />
+
         <!-- Nút xoá nhóm -->
         <Button
             android:id="@+id/deleteGroupButton"
             android:text="🗑️ Xoá nhóm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="10dp"
             android:backgroundTint="#E53935"
             android:textColor="@android:color/white" />
 

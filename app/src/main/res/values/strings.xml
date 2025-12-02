@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">btlandr</string>
+    <string name="send_message">Gửi tin nhắn</string>
 </resources>
