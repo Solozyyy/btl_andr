@@ -7,6 +7,7 @@ import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.*;
 import java.text.SimpleDateFormat;
 
@@ -16,6 +17,7 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
     private LinearLayout startTimeButton, endTimeButton;
     private TextView startTimeText, endTimeText;
     private Button saveEventButton;
+    private CheckBox importantCheckBox;
     private long startMillis = 0, endMillis = 0;
 
     private FirebaseFirestore db;
@@ -36,6 +38,7 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
         startTimeText = findViewById(R.id.startTimeText);
         endTimeText = findViewById(R.id.endTimeText);
         saveEventButton = findViewById(R.id.saveEventButton);
+        importantCheckBox = findViewById(R.id.importantCheckBox);
 
         startTimeButton.setOnClickListener(v -> pickDateTime(true));
         endTimeButton.setOnClickListener(v -> pickDateTime(false));
@@ -69,6 +72,7 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
     private void saveEvent() {
         String title = titleInput.getText().toString().trim();
         String note = noteInput.getText().toString().trim();
+        boolean isImportant = importantCheckBox.isChecked();
 
         // ⚠️ Validate dữ liệu
         if (title.isEmpty()) {
@@ -103,30 +107,138 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
             return;
         }
 
-        // ✅ Nếu hợp lệ, lưu vào Firestore
-        Event event = new Event(title, note, startMillis, endMillis, "Cá nhân");
+        // ✅ Chỉ kiểm tra nếu task mới có important = true
+        if (!isImportant) {
+            // Task không quan trọng, lưu luôn không cần kiểm tra
+            saveTaskToFirestore(title, note, startMillis, endMillis, isImportant);
+            return;
+        }
+
+        // ✅ Kiểm tra xung đột với important tasks
+        checkTimeConflictWithImportantTasks(title, note, startMillis, endMillis, isImportant);
+    }
+
+    private void checkTimeConflictWithImportantTasks(String title, String note, long startMillis, long endMillis, boolean isImportant) {
+        // Bước 1: Kiểm tra Personal Important Tasks
+        db.collection("UserAccount").document(uid).collection("events")
+                .whereEqualTo("important", true)
+                .get()
+                .addOnSuccessListener(personalSnapshot -> {
+                    // Kiểm tra xung đột với personal tasks
+                    for (QueryDocumentSnapshot doc : personalSnapshot) {
+                        Long existingStart = doc.getLong("startTime");
+                        Long existingEnd = doc.getLong("endTime");
+
+                        if (existingStart != null && existingEnd != null) {
+                            if (isTimeOverlap(startMillis, endMillis, existingStart, existingEnd)) {
+                                Toast.makeText(this,
+                                        "⚠️ Thời gian trùng với task quan trọng: " + doc.getString("title"),
+                                        Toast.LENGTH_LONG).show();
+                                return;
+                            }
+                        }
+                    }
+
+                    // Bước 2: Kiểm tra Group Important Tasks
+                    checkGroupImportantTasks(title, note, startMillis, endMillis, isImportant);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi kiểm tra: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void checkGroupImportantTasks(String title, String note, long startMillis, long endMillis, boolean isImportant) {
+        // Lấy tất cả groups mà user tham gia
+        db.collection("Groups")
+                .whereArrayContains("members", uid)
+                .get()
+                .addOnSuccessListener(groupSnapshot -> {
+                    if (groupSnapshot.isEmpty()) {
+                        // Không có group nào, lưu luôn
+                        saveTaskToFirestore(title, note, startMillis, endMillis, isImportant);
+                        return;
+                    }
+
+                    // Đếm số group cần kiểm tra
+                    int totalGroups = groupSnapshot.size();
+                    int[] checkedGroups = {0};
+                    boolean[] hasConflict = {false};
+
+                    for (QueryDocumentSnapshot groupDoc : groupSnapshot) {
+                        String checkGroupId = groupDoc.getId();
+
+                        db.collection("Groups").document(checkGroupId).collection("tasks")
+                                .whereEqualTo("important", true)
+                                .get()
+                                .addOnSuccessListener(taskSnapshot -> {
+                                    if (hasConflict[0]) return; // Đã có conflict rồi thì bỏ qua
+
+                                    // Kiểm tra xung đột
+                                    for (QueryDocumentSnapshot taskDoc : taskSnapshot) {
+                                        Long existingStart = taskDoc.getLong("startTime");
+                                        Long existingEnd = taskDoc.getLong("endTime");
+
+                                        if (existingStart != null && existingEnd != null) {
+                                            if (isTimeOverlap(startMillis, endMillis, existingStart, existingEnd)) {
+                                                hasConflict[0] = true;
+                                                Toast.makeText(this,
+                                                        "⚠️ Thời gian trùng với task nhóm quan trọng: " + taskDoc.getString("title"),
+                                                        Toast.LENGTH_LONG).show();
+                                                return;
+                                            }
+                                        }
+                                    }
+
+                                    // Tăng số group đã kiểm tra
+                                    checkedGroups[0]++;
+                                    if (checkedGroups[0] == totalGroups && !hasConflict[0]) {
+                                        // Đã kiểm tra hết, không có xung đột -> Lưu
+                                        saveTaskToFirestore(title, note, startMillis, endMillis, isImportant);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    checkedGroups[0]++;
+                                    if (checkedGroups[0] == totalGroups && !hasConflict[0]) {
+                                        saveTaskToFirestore(title, note, startMillis, endMillis, isImportant);
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi kiểm tra nhóm: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    // ✅ Kiểm tra 2 khoảng thời gian có trùng nhau không
+    private boolean isTimeOverlap(long start1, long end1, long start2, long end2) {
+        // Trùng khi: start1 < end2 VÀ end1 > start2
+        return (start1 < end2 && end1 > start2);
+    }
+
+    private void saveTaskToFirestore(String title, String note, long startMillis, long endMillis, boolean isImportant) {
+        // ✅ Tạo Event với constructor đúng (startTime, endTime)
+        Event event = new Event(title, note, startMillis, endMillis, "Cá nhân", isImportant);
 
         db.collection("UserAccount")
                 .document(uid)
                 .collection("events")
                 .add(event)
                 .addOnSuccessListener(doc -> {
-                    Toast.makeText(this, "Đã lưu sự kiện!", Toast.LENGTH_SHORT).show();
-                    scheduleReminder(event.getTitle(), event.getNote(), event.getStartTime());
+                    Toast.makeText(this, "✅ Đã lưu sự kiện!", Toast.LENGTH_SHORT).show();
+                    scheduleReminder(title, note, startMillis);
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     // ✅ Xử lý offline
                     if (!NetworkUtil.isOnline(this)) {
                         Toast.makeText(this, "Không có mạng - lưu tạm offline", Toast.LENGTH_SHORT).show();
-                        scheduleReminder(event.getTitle(), event.getNote(), event.getStartTime());
+                        scheduleReminder(title, note, startMillis);
                         finish();
                     } else {
-                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "❌ Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
-
 
     // 🔔 Tạo nhắc nhở
     private void scheduleReminder(String title, String note, long timeInMillis) {

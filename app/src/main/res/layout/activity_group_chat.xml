@@ -19,21 +19,21 @@
             android:id="@+id/backButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
             android:text="← Quay lại"
             android:textColor="@android:color/white"
-            android:background="@android:color/transparent"
             android:textSize="14sp" />
 
         <TextView
             android:id="@+id/chatHeaderTitle"
-            android:layout_width="0dp"
+            android:layout_width="223dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:gravity="center"
             android:text="Phòng chat"
             android:textColor="@android:color/white"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:gravity="center" />
+            android:textStyle="bold" />
 
         <View
             android:layout_width="48dp"
