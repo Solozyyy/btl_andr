@@ -2,82 +2,95 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="#FAFAFA">
 
-    <!-- App Bar với gradient -->
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Toolbar đơn giản không dùng AppBarLayout -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:background="@drawable/gradient_header"
-        android:elevation="0dp">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@drawable/ic_back"
-            app:title="Chi tiết sự kiện"
-            app:titleTextColor="#FFFFFF"
-            app:navigationIconTint="#FFFFFF"/>
-    </com.google.android.material.appbar.AppBarLayout>
+        android:elevation="8dp"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="Chi tiết sự kiện"
+        app:titleTextColor="#FFFFFF"
+        app:navigationIconTint="#FFFFFF"
+        app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"/>
 
     <!-- Main Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="56dp"
         android:fillViewport="true"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="24dp"
+            android:clipToPadding="false">
 
-            <!-- Title Card -->
+            <!-- Title Card - Thiết kế nổi bật hơn -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="16dp">
+                android:layout_marginBottom="20dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:translationZ="2dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <TextView
-                        android:text="Tiêu đề"
+                        android:text="TIÊU ĐỀ"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="12sp"
+                        android:textSize="11sp"
                         android:textColor="#9E9E9E"
                         android:textStyle="bold"
-                        android:letterSpacing="0.05"/>
+                        android:letterSpacing="0.1"
+                        android:fontFamily="sans-serif-medium"/>
 
                     <TextView
                         android:id="@+id/detailTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Tên sự kiện"
-                        android:textSize="24sp"
+                        android:textSize="26sp"
                         android:textStyle="bold"
-                        android:textColor="#212121"
-                        android:layout_marginTop="8dp"/>
+                        android:textColor="#1A237E"
+                        android:layout_marginTop="12dp"
+                        android:lineSpacingExtra="4dp"
+                        android:fontFamily="sans-serif-medium"
+                        tools:text="Họp nhóm dự án quan trọng"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Category Card -->
+            <!-- ⭐ Important Badge Card (Ẩn nếu không quan trọng) -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/importantCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="16dp">
+                app:cardElevation="4dp"
+                app:cardCornerRadius="18dp"
+                app:cardBackgroundColor="#FFF3E0"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -86,14 +99,81 @@
                     android:padding="20dp"
                     android:gravity="center_vertical">
 
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_category"
-                        android:tint="#7E57C2"
-                        android:padding="8dp"
-                        android:background="@drawable/icon_background"
-                        android:backgroundTint="#EDE7F6"/>
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#FFE0B2">
+
+                        <ImageView
+                            android:id="@+id/importantIcon"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@android:drawable/btn_star_big_on"
+                            app:tint="#FF9800"
+                            android:layout_gravity="center"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="16dp">
+
+                        <TextView
+                            android:text="Ưu tiên"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="#F57C00"
+                            android:fontFamily="sans-serif"/>
+
+                        <TextView
+                            android:id="@+id/importantText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sự kiện quan trọng"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:textColor="#E65100"
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Category Card - Cải thiện layout -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="3dp"
+                app:cardCornerRadius="18dp"
+                app:cardBackgroundColor="#FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="20dp"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#EDE7F6">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_category"
+                            app:tint="#7E57C2"
+                            android:layout_gravity="center"/>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -107,28 +187,31 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="12sp"
-                            android:textColor="#9E9E9E"/>
+                            android:textColor="#757575"
+                            android:fontFamily="sans-serif"/>
 
                         <TextView
                             android:id="@+id/detailCategory"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Cá nhân"
-                            android:textSize="16sp"
+                            android:textSize="17sp"
                             android:textStyle="bold"
                             android:textColor="#212121"
-                            android:layout_marginTop="4dp"/>
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="sans-serif-medium"/>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Time Card -->
+            <!-- Time Card - Thiết kế sang trọng hơn -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="16dp">
+                app:cardElevation="3dp"
+                app:cardCornerRadius="18dp"
+                app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -143,14 +226,20 @@
                         android:orientation="horizontal"
                         android:gravity="center_vertical">
 
-                        <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_recent_history"
-                            android:tint="#4CAF50"
-                            android:padding="8dp"
-                            android:background="@drawable/icon_background"
-                            android:backgroundTint="#E8F5E9"/>
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="#E8F5E9">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@android:drawable/ic_menu_recent_history"
+                                app:tint="#4CAF50"
+                                android:layout_gravity="center"/>
+                        </com.google.android.material.card.MaterialCardView>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -164,26 +253,30 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="12sp"
-                                android:textColor="#9E9E9E"/>
+                                android:textColor="#757575"
+                                android:fontFamily="sans-serif"/>
 
                             <TextView
                                 android:id="@+id/detailStartTime"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="01/01/2024 - 09:00"
-                                android:textSize="16sp"
+                                android:textSize="17sp"
                                 android:textStyle="bold"
                                 android:textColor="#212121"
-                                android:layout_marginTop="4dp"/>
+                                android:layout_marginTop="4dp"
+                                android:fontFamily="sans-serif-medium"/>
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Divider -->
+                    <!-- Divider với hiệu ứng gradient -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#EEEEEE"
-                        android:layout_marginVertical="16dp"/>
+                        android:background="#E0E0E0"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="20dp"
+                        android:layout_marginStart="64dp"/>
 
                     <!-- End Time -->
                     <LinearLayout
@@ -192,14 +285,20 @@
                         android:orientation="horizontal"
                         android:gravity="center_vertical">
 
-                        <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_recent_history"
-                            android:tint="#F44336"
-                            android:padding="8dp"
-                            android:background="@drawable/icon_background"
-                            android:backgroundTint="#FFEBEE"/>
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="#FFEBEE">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@android:drawable/ic_menu_recent_history"
+                                app:tint="#F44336"
+                                android:layout_gravity="center"/>
+                        </com.google.android.material.card.MaterialCardView>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -213,57 +312,68 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="12sp"
-                                android:textColor="#9E9E9E"/>
+                                android:textColor="#757575"
+                                android:fontFamily="sans-serif"/>
 
                             <TextView
                                 android:id="@+id/detailEndTime"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="01/01/2024 - 10:00"
-                                android:textSize="16sp"
+                                android:textSize="17sp"
                                 android:textStyle="bold"
                                 android:textColor="#212121"
-                                android:layout_marginTop="4dp"/>
+                                android:layout_marginTop="4dp"
+                                android:fontFamily="sans-serif-medium"/>
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Duration -->
-                    <LinearLayout
+                    <!-- Duration - Thiết kế nổi bật -->
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:layout_marginTop="16dp"
-                        android:padding="12dp"
-                        android:background="@drawable/duration_background">
+                        android:layout_marginTop="20dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#E3F2FD">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_timer"
-                            android:tint="#2196F3"
-                            android:layout_marginEnd="8dp"/>
-
-                        <TextView
-                            android:id="@+id/detailDuration"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Thời lượng: 1 giờ"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#2196F3"/>
-                    </LinearLayout>
+                            android:orientation="horizontal"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:src="@drawable/ic_timer"
+                                app:tint="#1976D2"
+                                android:layout_marginEnd="10dp"/>
+
+                            <TextView
+                                android:id="@+id/detailDuration"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Thời lượng: 1 giờ"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textColor="#1976D2"
+                                android:fontFamily="sans-serif-medium"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Note Card -->
+            <!-- Note Card - Thiết kế tinh tế -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/noteCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardElevation="2dp"
-                app:cardCornerRadius="16dp">
+                app:cardElevation="3dp"
+                app:cardCornerRadius="18dp"
+                app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -276,22 +386,32 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginBottom="16dp">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_note"
-                            android:tint="#FF9800"/>
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="#FFF3E0">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_note"
+                                app:tint="#F57C00"
+                                android:layout_gravity="center"/>
+                        </com.google.android.material.card.MaterialCardView>
 
                         <TextView
                             android:text="Ghi chú"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="14sp"
+                            android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="#212121"
-                            android:layout_marginStart="8dp"/>
+                            android:layout_marginStart="12dp"
+                            android:fontFamily="sans-serif-medium"/>
                     </LinearLayout>
 
                     <TextView
@@ -301,7 +421,10 @@
                         android:text="Nội dung ghi chú sẽ hiển thị ở đây"
                         android:textSize="15sp"
                         android:textColor="#424242"
-                        android:lineSpacingExtra="4dp"/>
+                        android:lineSpacingExtra="6dp"
+                        android:fontFamily="sans-serif"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

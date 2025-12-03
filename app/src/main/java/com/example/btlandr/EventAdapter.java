@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -50,6 +51,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         // Set title và category
         holder.txtTitle.setText(event.getTitle());
         holder.txtCategory.setText(event.getCategory());
+
+        // ⭐ Hiển thị icon important
+        if (event.isImportant()) {
+            holder.iconImportant.setVisibility(View.VISIBLE);
+        } else {
+            holder.iconImportant.setVisibility(View.GONE);
+        }
 
         // Format và hiển thị thời gian
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault());
@@ -121,6 +129,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtTitle, txtNote, txtCategory, txtTime, txtStatus;
         MaterialButton btnDelete, btnDetail;
+        ImageView iconImportant;
         View colorBar;
 
         public ViewHolder(@NonNull View itemView) {
@@ -132,6 +141,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             txtStatus = itemView.findViewById(R.id.txtStatus);
             btnDelete = itemView.findViewById(R.id.btnDelete);
             btnDetail = itemView.findViewById(R.id.btnDetail);
+            iconImportant = itemView.findViewById(R.id.iconImportant);
             colorBar = itemView.findViewById(R.id.colorBar);
         }
     }

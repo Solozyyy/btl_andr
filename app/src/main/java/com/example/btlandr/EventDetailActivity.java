@@ -3,6 +3,7 @@ package com.example.btlandr;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
@@ -30,6 +31,9 @@ public class EventDetailActivity extends AppCompatActivity {
         TextView endTimeText = findViewById(R.id.detailEndTime);
         TextView durationText = findViewById(R.id.detailDuration);
         MaterialCardView noteCard = findViewById(R.id.noteCard);
+        ImageView importantIcon = findViewById(R.id.importantIcon); // ⭐ Thêm icon
+        TextView importantText = findViewById(R.id.importantText);   // ⭐ Thêm text
+        MaterialCardView importantCard = findViewById(R.id.importantCard); // ⭐ Thêm card
 
         // Lấy dữ liệu từ Intent
         String title = getIntent().getStringExtra("title");
@@ -37,6 +41,7 @@ public class EventDetailActivity extends AppCompatActivity {
         long start = getIntent().getLongExtra("start", 0);
         long end = getIntent().getLongExtra("end", 0);
         String category = getIntent().getStringExtra("category");
+        boolean important = getIntent().getBooleanExtra("important", false); // ⭐ Lấy important
 
         // Format thời gian
         SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault());
@@ -53,6 +58,13 @@ public class EventDetailActivity extends AppCompatActivity {
         startTimeText.setText(startFormatted);
         endTimeText.setText(endFormatted);
         durationText.setText("Thời lượng: " + durationFormatted);
+
+        // ⭐ Xử lý hiển thị important badge
+        if (important) {
+            importantCard.setVisibility(View.VISIBLE);
+        } else {
+            importantCard.setVisibility(View.GONE);
+        }
 
         // Xử lý note (ẩn card nếu không có ghi chú)
         if (note == null || note.trim().isEmpty()) {

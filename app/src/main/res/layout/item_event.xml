@@ -16,7 +16,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header với Title và Category Badge -->
+        <!-- Header với Title, Important Icon và Category Badge -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -37,17 +37,36 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <!-- Title -->
-                <TextView
-                    android:id="@+id/txtTitle"
-                    android:layout_width="wrap_content"
+                <!-- Title với Important Icon -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tên sự kiện"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#212121"
-                    android:maxLines="2"
-                    android:ellipsize="end"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- Important Star Icon -->
+                    <ImageView
+                        android:id="@+id/iconImportant"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@android:drawable/btn_star_big_on"
+                        android:tint="#FF9800"
+                        android:layout_marginEnd="8dp"
+                        android:visibility="gone"/>
+
+                    <!-- Title -->
+                    <TextView
+                        android:id="@+id/txtTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tên sự kiện"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121"
+                        android:maxLines="2"
+                        android:ellipsize="end"/>
+                </LinearLayout>
 
                 <!-- Category Badge -->
                 <LinearLayout

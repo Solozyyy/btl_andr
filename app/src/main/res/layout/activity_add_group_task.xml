@@ -1,57 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
-    android:background="#FFFFFF">
+    android:background="#F5F5F5"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <EditText
-            android:id="@+id/titleInput"
+        <!-- Header -->
+        <TextView
+            android:text="Tạo Task Nhóm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Tiêu đề task"
-            android:inputType="textCapSentences"
-            android:padding="12dp"
-            android:background="@drawable/edittext_bg"/>
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="24dp"/>
 
-        <EditText
-            android:id="@+id/noteInput"
+        <!-- Title Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Ghi chú (tùy chọn)"
-            android:inputType="textMultiLine"
-            android:padding="12dp"
-            android:layout_marginTop="10dp"
-            android:minHeight="80dp"
-            android:background="@drawable/edittext_bg"/>
+            android:layout_marginBottom="16dp"
+            app:cardElevation="2dp"
+            app:cardCornerRadius="12dp">
 
-        <Button
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Tiêu đề task"
+                app:boxBackgroundMode="none"
+                app:hintTextColor="#666666"
+                android:padding="4dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/titleInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:textSize="16sp"
+                    android:textColor="#212121"
+                    android:padding="16dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Note Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="2dp"
+            app:cardCornerRadius="12dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Ghi chú (tùy chọn)"
+                app:boxBackgroundMode="none"
+                app:hintTextColor="#666666"
+                android:padding="4dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/noteInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:gravity="top"
+                    android:textSize="16sp"
+                    android:textColor="#212121"
+                    android:padding="16dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Important Checkbox Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="2dp"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/btn_star_big_on"
+                    android:layout_marginEnd="12dp"
+                    app:tint="#FF9800" />
+
+                <CheckBox
+                    android:id="@+id/importantCheckBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Đánh dấu là quan trọng"
+                    android:textSize="16sp"
+                    android:textColor="#212121"
+                    android:buttonTint="#FF9800"/>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Time Section -->
+        <TextView
+            android:text="Thời gian"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#424242"
+            android:layout_marginBottom="12dp"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Start Time Button -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/startTimeButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:text="Chọn thời gian bắt đầu"
-            android:layout_marginTop="16dp" />
+            android:textSize="16sp"
+            android:layout_marginBottom="12dp"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            app:icon="@android:drawable/ic_menu_recent_history"
+            app:iconGravity="textStart"
+            app:iconTint="#FFFFFF"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
-        <Button
+        <!-- End Time Button -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/endTimeButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:text="Chọn thời gian kết thúc"
-            android:layout_marginTop="8dp" />
+            android:textSize="16sp"
+            android:layout_marginBottom="24dp"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#F44336"
+            android:textColor="#FFFFFF"
+            app:icon="@android:drawable/ic_menu_recent_history"
+            app:iconGravity="textStart"
+            app:iconTint="#FFFFFF"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
-        <Button
+        <!-- Save Button -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/saveEventButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:text="Lưu task nhóm"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="#03A9F4"
-            android:textColor="#FFFFFF" />
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="#03A9F4"
+            android:textColor="#FFFFFF"
+            app:icon="@android:drawable/ic_menu_save"
+            app:iconGravity="textStart"
+            app:iconTint="#FFFFFF"
+            android:elevation="4dp"/>
 
     </LinearLayout>
 </ScrollView>
