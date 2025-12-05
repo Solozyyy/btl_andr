@@ -20,7 +20,7 @@ public class AddGroupTaskActivity extends AppCompatActivity {
     private CheckBox importantCheckBox;
 
     private long startMillis = 0, endMillis = 0;
-    private String groupId;
+    private String groupId, groupName, adminEmail;
 
     private FirebaseFirestore db;
     private String uid;
@@ -33,6 +33,8 @@ public class AddGroupTaskActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         uid = FirebaseAuth.getInstance().getUid();
         groupId = getIntent().getStringExtra("groupId");
+        groupName = getIntent().getStringExtra("groupName");
+        adminEmail = getIntent().getStringExtra("adminEmail");
 
         titleInput = findViewById(R.id.titleInput);
         noteInput = findViewById(R.id.noteInput);
@@ -271,7 +273,7 @@ public class AddGroupTaskActivity extends AppCompatActivity {
     }
 
     private void saveTaskToFirestore(String title, String note, long startMillis, long endMillis, boolean isImportant) {
-        Event event = new Event(title, note, startMillis, endMillis, "Nhóm", isImportant);
+        Event event = new Event(title, note, startMillis, endMillis, "Nhóm: " + groupName + "(" + adminEmail + ")", isImportant);
 
         db.collection("Groups").document(groupId).collection("tasks")
                 .add(event)

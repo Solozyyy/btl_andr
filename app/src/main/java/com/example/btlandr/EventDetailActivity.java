@@ -20,8 +20,7 @@ public class EventDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_event_detail);
 
         // Setup Toolbar
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+
 
         // Ánh xạ views
         TextView titleText = findViewById(R.id.detailTitle);
@@ -41,6 +40,7 @@ public class EventDetailActivity extends AppCompatActivity {
         long start = getIntent().getLongExtra("start", 0);
         long end = getIntent().getLongExtra("end", 0);
         String category = getIntent().getStringExtra("category");
+        String group = getIntent().getStringExtra("group");
         boolean important = getIntent().getBooleanExtra("important", false); // ⭐ Lấy important
 
         // Format thời gian

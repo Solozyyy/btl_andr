@@ -4,14 +4,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
@@ -19,6 +23,10 @@ import com.google.firebase.firestore.*;
 import java.util.*;
 
 public class PersonalTaskActivity extends AppCompatActivity {
+
+    public enum FilterType {
+        DAY, WEEK, MONTH, YEAR, ALL, RANGE
+    }
 
     private FirebaseFirestore db;
     private FirebaseAuth auth;
@@ -28,8 +36,14 @@ public class PersonalTaskActivity extends AppCompatActivity {
     private EventAdapter adapterOngoing, adapterUpcoming, adapterPast;
 
     // UI Components cho sections và counters
-    private LinearLayout ongoingSection, upcomingSection, pastSection, emptyState;
-    private TextView tvEventCount, tvOngoingCount, tvUpcomingCount, tvPastCount;
+    private LinearLayout ongoingSection, upcomingSection, pastSection, emptyState, layoutRange;
+    private TextView tvEventCount, tvOngoingCount, tvUpcomingCount, tvPastCount, filterType;
+
+    private Button btnStartDate, btnEndDate;
+    private FilterType currentFilter = FilterType.ALL;
+
+    private long rangeStart = 0;
+    private long rangeEnd = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +59,7 @@ public class PersonalTaskActivity extends AppCompatActivity {
         recyclerOngoing = findViewById(R.id.recyclerOngoing);
         recyclerUpcoming = findViewById(R.id.recyclerUpcoming);
         recyclerPast = findViewById(R.id.recyclerPast);
+        layoutRange = findViewById(R.id.layoutRange);
 
         // 🔹 Ánh xạ sections và counters
         ongoingSection = findViewById(R.id.ongoingSection);
@@ -56,10 +71,23 @@ public class PersonalTaskActivity extends AppCompatActivity {
         tvOngoingCount = findViewById(R.id.tvOngoingCount);
         tvUpcomingCount = findViewById(R.id.tvUpcomingCount);
         tvPastCount = findViewById(R.id.tvPastCount);
+        filterType = findViewById(R.id.filterType);
+
+        btnEndDate = findViewById(R.id.btnEndDate);
+        btnStartDate = findViewById(R.id.btnStartDate);
 
         recyclerOngoing.setLayoutManager(new LinearLayoutManager(this));
         recyclerUpcoming.setLayoutManager(new LinearLayoutManager(this));
         recyclerPast.setLayoutManager(new LinearLayoutManager(this));
+
+        layoutRange.setVisibility(View.GONE);
+        updateFilterDisplay(currentFilter);
+
+        // 🔹 Ánh xạ nút filter
+        ImageView btnFilter = findViewById(R.id.btnFilter);
+        btnFilter.setOnClickListener(v -> showFilterBottomSheet());
+        btnStartDate.setOnClickListener(v -> showDatePicker(true));
+        btnEndDate.setOnClickListener(v -> showDatePicker(false));
 
         // 🔹 Gắn adapter cho mỗi danh sách
         adapterOngoing = new EventAdapter(new ArrayList<>(), new EventAdapter.OnEventActionListener() {
@@ -113,6 +141,57 @@ public class PersonalTaskActivity extends AppCompatActivity {
         loadEvents();
     }
 
+    // 🧩 Hàm lọc sự kiện
+    private boolean matchFilter(Event e, FilterType filterType) {
+        long now = System.currentTimeMillis();
+
+        // Lấy start - end của event
+        long start = e.getStartTime();
+        long end = e.getEndTime();
+
+        // Kiểm tra sự kiện đang diễn ra
+        boolean isOngoing = (now >= start && now <= end);
+
+        // Lấy thời điểm start
+        Calendar eventCal = Calendar.getInstance();
+        eventCal.setTimeInMillis(start);
+
+        // Lấy thời gian hiện tại
+        Calendar cal = Calendar.getInstance();
+
+        switch (filterType) {
+
+            case RANGE:
+                if (rangeStart == 0 || rangeEnd == 0) return false;
+                return start <= rangeEnd && end >= rangeStart;
+
+            case DAY:
+                if (isOngoing) return true;
+                return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
+                        cal.get(Calendar.DAY_OF_YEAR) == eventCal.get(Calendar.DAY_OF_YEAR);
+
+            case WEEK:
+                if (isOngoing) return true;
+                return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
+                        cal.get(Calendar.WEEK_OF_YEAR) == eventCal.get(Calendar.WEEK_OF_YEAR);
+
+            case MONTH:
+                if (isOngoing) return true;
+                return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
+                        cal.get(Calendar.MONTH) == eventCal.get(Calendar.MONTH);
+
+            case YEAR:
+                if (isOngoing) return true;
+                return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR);
+
+            case ALL:
+            default:
+                return true;
+        }
+    }
+
+
+
     // 🧩 Hàm mở chi tiết sự kiện
     private void openDetail(Event event) {
         Intent i = new Intent(PersonalTaskActivity.this, EventDetailActivity.class);
@@ -144,6 +223,8 @@ public class PersonalTaskActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot doc : value) {
                             Event e = doc.toObject(Event.class);
                             e.setId(doc.getId());
+
+                            if (!matchFilter(e, currentFilter)) continue; // ⬅️ lọc ở đây
 
                             long start = e.getStartTime();
                             long end = e.getEndTime();
@@ -223,5 +304,90 @@ public class PersonalTaskActivity extends AppCompatActivity {
         db.collection("UserAccount").document(uid).collection("events").document(eventId)
                 .delete()
                 .addOnSuccessListener(a -> Toast.makeText(this, "Đã xóa!", Toast.LENGTH_SHORT).show());
+    }
+
+    private void updateFilterDisplay(FilterType type) {
+        switch (type) {
+
+            case DAY:
+                filterType.setText("Hôm nay");
+                break;
+
+            case WEEK:
+                filterType.setText("Tuần này");
+                break;
+
+            case MONTH:
+                filterType.setText("Tháng này");
+                break;
+
+            case YEAR:
+                filterType.setText("Năm nay");
+                break;
+
+            case ALL:
+                filterType.setText("Tất cả");
+                break;
+
+            case RANGE:
+                filterType.setText("Khoảng thời gian");
+                break;
+
+        }
+    }
+    private void applyFilter(FilterType type, BottomSheetDialog dialog) {
+        currentFilter = type;
+        loadEvents();
+        dialog.dismiss();
+
+        if (type == FilterType.RANGE) {
+            layoutRange.setVisibility(View.VISIBLE);
+        } else {
+            layoutRange.setVisibility(View.GONE);
+        }
+
+        updateFilterDisplay(currentFilter);
+    }
+    private void showFilterBottomSheet() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.bottom_filter_event, null);
+
+        view.findViewById(R.id.filterToday).setOnClickListener(v -> applyFilter(FilterType.DAY, dialog));
+        view.findViewById(R.id.filterWeek).setOnClickListener(v -> applyFilter(FilterType.WEEK, dialog));
+        view.findViewById(R.id.filterMonth).setOnClickListener(v -> applyFilter(FilterType.MONTH, dialog));
+        view.findViewById(R.id.filterYear).setOnClickListener(v -> applyFilter(FilterType.YEAR, dialog));
+        view.findViewById(R.id.filterAll).setOnClickListener(v -> applyFilter(FilterType.ALL, dialog));
+        view.findViewById(R.id.filterRange).setOnClickListener(v -> applyFilter(FilterType.RANGE, dialog));
+
+        dialog.setContentView(view);
+        dialog.show();
+    }
+
+    private void showDatePicker(boolean isStart) {
+        Calendar cal = Calendar.getInstance();
+
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (dp, y, m, d) -> {
+                    Calendar chosen = Calendar.getInstance();
+                    chosen.set(y, m, d, 0, 0, 0);
+
+                    if (isStart) {
+                        rangeStart = chosen.getTimeInMillis();
+                        btnStartDate.setText("Bắt đầu: " + d + "/" + (m+1) + "/" + y);
+                    } else {
+                        chosen.set(y, m, d, 23, 59, 59);
+                        rangeEnd = chosen.getTimeInMillis();
+                        btnEndDate.setText("Kết thúc: " + d + "/" + (m+1) + "/" + y);
+                    }
+
+                    loadEvents();
+                },
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+        );
+
+        dialog.show();
     }
 }
