@@ -22,6 +22,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
     private List<Event> eventList;
     private OnEventActionListener listener;
 
+    private String category = "";
+
     // Interface callback
     public interface OnEventActionListener {
         void onDelete(String eventId);
@@ -50,7 +52,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
         // Set title và category
         holder.txtTitle.setText(event.getTitle());
-        holder.txtCategory.setText(event.getCategory());
+        if (category.isEmpty()) {
+            holder.txtCategory.setText(event.getCategory());
+        } else {
+            holder.txtCategory.setText(category);
+        }
 
         // ⭐ Hiển thị icon important
         if (event.isImportant()) {
@@ -123,6 +129,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
     @Override
     public int getItemCount() {
         return eventList != null ? eventList.size() : 0;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     // 🧩 4. ViewHolder ánh xạ với item_event.xml

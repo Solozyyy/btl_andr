@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lọc theo thời gian"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"/>
+
+    <TextView android:id="@+id/filterToday"      style="@style/FilterItem" android:text="Hôm nay"/>
+    <TextView android:id="@+id/filterWeek"       style="@style/FilterItem" android:text="Tuần này"/>
+    <TextView android:id="@+id/filterMonth"      style="@style/FilterItem" android:text="Tháng này"/>
+    <TextView android:id="@+id/filterYear"       style="@style/FilterItem" android:text="Năm nay"/>
+    <TextView android:id="@+id/filterAll"        style="@style/FilterItem" android:text="Tất cả"/>
+    <TextView android:id="@+id/filterRange"        style="@style/FilterItem" android:text="Khoảng thời gian"/>
+</LinearLayout>
