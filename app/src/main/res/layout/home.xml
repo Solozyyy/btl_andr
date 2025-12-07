@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFFFF">
 
     <!-- 🔹 Navbar cố định -->
     <LinearLayout
@@ -49,8 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Chào mừng bạn đến trang chủ!"
-            android:textSize="20sp"
-            android:textStyle="bold"
+            android:textSize="20sp" android:textStyle="bold"
             android:layout_marginBottom="30dp"/>
 
         <!-- Nút chia đôi -->
@@ -59,7 +54,8 @@
             android:layout_height="60dp"
             android:orientation="horizontal"
             android:background="@drawable/rounded_border"
-            android:elevation="4dp">
+            android:elevation="4dp"
+            android:layout_marginBottom="16dp">
 
             <Button
                 android:id="@+id/btnPersonal"
@@ -86,6 +82,17 @@
                 android:background="#BB86FC"
                 android:textColor="@android:color/white"/>
         </LinearLayout>
+
+        <!-- Nút Tài khoản -->
+        <Button
+            android:id="@+id/btnProfile"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="👤 Thông tin tài khoản"
+            android:textSize="16sp"
+            android:backgroundTint="#FF6F00"
+            android:textColor="@android:color/white"
+            android:elevation="4dp"/>
 
     </LinearLayout>
 </LinearLayout>
