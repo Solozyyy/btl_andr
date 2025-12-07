@@ -17,7 +17,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
     private LinearLayout containerOngoing, containerUpcoming, containerPast;
 
-    private String groupId, adminId, adminEmail;
+    private String groupId, groupName, adminId, adminEmail;
     private FirebaseFirestore db;
     private String currentUid;
     private boolean isAdmin;
@@ -49,6 +49,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
         // Nhận dữ liệu từ Intent
         groupId = getIntent().getStringExtra("groupId");
+        groupName = getIntent().getStringExtra("groupName");
         adminId = getIntent().getStringExtra("adminId");
         adminEmail = getIntent().getStringExtra("adminEmail");
         String groupName = getIntent().getStringExtra("groupName");
@@ -77,6 +78,8 @@ public class GroupDetailActivity extends AppCompatActivity {
         addGroupTaskButton.setOnClickListener(v -> {
             Intent i = new Intent(this, AddGroupTaskActivity.class);
             i.putExtra("groupId", groupId);
+            i.putExtra("groupName", groupName);
+            i.putExtra("adminEmail", adminEmail);
             startActivity(i);
         });
 

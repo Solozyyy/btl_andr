@@ -11,10 +11,9 @@
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="100dp"
         android:background="@drawable/gradient_header"
         android:elevation="8dp"
-        app:navigationIcon="@drawable/ic_back"
         app:title="Chi tiết sự kiện"
         app:titleTextColor="#FFFFFF"
         app:navigationIconTint="#FFFFFF"
@@ -24,7 +23,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="56dp"
+        android:layout_marginTop="100dp"
         android:fillViewport="true"
         android:scrollbars="none"
         android:overScrollMode="never"

@@ -10,8 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -21,8 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class InvitedGroupsFragment extends Fragment {
 
@@ -33,6 +30,12 @@ public class InvitedGroupsFragment extends Fragment {
     private FirebaseFirestore db;
     private String uid;
 
+    // Lưu danh sách members cũ theo group
+    private final Map<String, List<String>> lastMembersMap = new HashMap<>();
+
+    // Chặn thông báo ở lần load đầu
+    private boolean initialLoaded = false;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,23 +43,42 @@ public class InvitedGroupsFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // 🔔 Theo dõi realtime tất cả nhóm, để phát hiện khi mình được mời
+        // Lắng nghe mọi thay đổi trong Groups
         db.collection("Groups").addSnapshotListener((snapshots, e) -> {
             if (e != null || snapshots == null) return;
 
-            for (DocumentChange change : snapshots.getDocumentChanges()) {
-                if (change.getType() == DocumentChange.Type.MODIFIED) {
-                    Group g = change.getDocument().toObject(Group.class);
-                    g.setId(change.getDocument().getId());
+            for (QueryDocumentSnapshot doc : snapshots) {
 
-                    if (g.getMembers() != null && g.getMembers().contains(uid)) {
-                        showInviteNotification(g.getName(), g.getAdminEmail());
+                String groupId = doc.getId();
+                Group newGroup = doc.toObject(Group.class);
+                newGroup.setId(groupId);
+
+                List<String> newMembers = newGroup.getMembers();
+                if (newMembers == null) newMembers = new ArrayList<>();
+
+                List<String> oldMembers = lastMembersMap.get(groupId);
+                if (oldMembers == null) oldMembers = new ArrayList<>();
+
+                boolean wasNotMember = !oldMembers.contains(uid);
+                boolean isNowMember = newMembers.contains(uid);
+
+                // 🔥 Chỉ thông báo từ lần thứ 2 trở đi
+                if (initialLoaded) {
+                    if (wasNotMember && isNowMember) {
+                        if (!uid.equals(newGroup.getAdminId())) {
+                            showInviteNotification(newGroup.getName(), newGroup.getAdminEmail());
+                        }
                     }
                 }
+
+                // Lưu lại members mới
+                lastMembersMap.put(groupId, new ArrayList<>(newMembers));
             }
+
+            // Kích hoạt sau lần load đầu tiên
+            initialLoaded = true;
         });
     }
-
 
     @Nullable
     @Override
@@ -65,9 +87,6 @@ public class InvitedGroupsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_invited_groups, container, false);
-
-        db = FirebaseFirestore.getInstance();
-        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         recyclerView = view.findViewById(R.id.recyclerInvitedGroups);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -84,12 +103,10 @@ public class InvitedGroupsFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         loadInvitedGroups();
-
         return view;
     }
 
     private void loadInvitedGroups() {
-        // Lấy các nhóm mà user là thành viên nhưng KHÔNG phải admin
         db.collection("Groups")
                 .whereArrayContains("members", uid)
                 .addSnapshotListener((snapshots, e) -> {
@@ -121,7 +138,6 @@ public class InvitedGroupsFragment extends Fragment {
         String channelId = "invite_channel";
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Tạo kênh thông báo (Android 8+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     channelId,
@@ -131,21 +147,34 @@ public class InvitedGroupsFragment extends Fragment {
             nm.createNotificationChannel(channel);
         }
 
-        // Intent mở app khi nhấn thông báo
         Intent intent = new Intent(context, GroupTaskActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
-        Notification notification = new Notification.Builder(context, channelId)
-                .setSmallIcon(R.drawable.ic_notify)
-                .setContentTitle("Lời mời tham gia nhóm")
-                .setContentText("Bạn đã được mời vào nhóm \"" + groupName + "\" bởi " + adminEmail)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .build();
+        Notification notification;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Android 8.0+ dùng channelId
+            notification = new Notification.Builder(context, channelId)
+                    .setSmallIcon(R.drawable.ic_notify)
+                    .setContentTitle("Lời mời tham gia nhóm")
+                    .setContentText("Bạn đã được mời vào nhóm \"" + groupName + "\" bởi " + adminEmail)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .build();
+        } else {
+            // Android 7.1 trở xuống dùng Builder không có channelId
+            notification = new Notification.Builder(context)
+                    .setSmallIcon(R.drawable.ic_notify)
+                    .setContentTitle("Lời mời tham gia nhóm")
+                    .setContentText("Bạn đã được mời vào nhóm \"" + groupName + "\" bởi " + adminEmail)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .build();
+        }
 
         nm.notify((int) System.currentTimeMillis(), notification);
     }
-
 }
