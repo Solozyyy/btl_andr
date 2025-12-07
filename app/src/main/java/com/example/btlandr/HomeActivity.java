@@ -22,6 +22,7 @@ public class HomeActivity extends AppCompatActivity {
 
         Button btnPersonal = findViewById(R.id.btnPersonal);
         Button btnGroup = findViewById(R.id.btnGroup);
+        Button btnProfile = findViewById(R.id.btnProfile);
         Button btnLogout = findViewById(R.id.btnLogout);
 
         if (NetworkUtil.isOnline(this)) {
@@ -39,6 +40,12 @@ public class HomeActivity extends AppCompatActivity {
         // Chuyển sang màn task nhóm
         btnGroup.setOnClickListener(v -> {
             Intent i = new Intent(HomeActivity.this, GroupTaskActivity.class);
+            startActivity(i);
+        });
+
+        // Chuyển sang màn thông tin cá nhân
+        btnProfile.setOnClickListener(v -> {
+            Intent i = new Intent(HomeActivity.this, ProfileActivity.class);
             startActivity(i);
         });
 

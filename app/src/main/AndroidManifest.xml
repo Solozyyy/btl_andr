@@ -9,8 +9,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <application
-        android:allowBackup="true"
+    <application android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -21,9 +20,7 @@
         <activity android:name=".HomeActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".MainActivity"/>
-        <activity
-            android:name=".LoginActivity"
-            android:exported="true">
+        <activity android:name=".LoginActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -35,6 +32,7 @@
         <activity android:name=".PersonalTaskActivity" android:exported="false" />
         <activity android:name=".AddPersonalTaskActivity" android:exported="false" />
         <activity android:name=".EventDetailActivity" android:exported="false" />
+        <activity android:name=".ProfileActivity" android:exported="false" />
 
         <!-- Lịch chung / nhóm -->
         <activity android:name=".ScheduleActivity" android:exported="false" />
@@ -47,7 +45,8 @@
             android:name=".ReminderReceiver"
             android:exported="false"
             android:enabled="true" />
-        <receiver android:name=".ConnectivityReceiver"
+        <receiver 
+            android:name=".ConnectivityReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />

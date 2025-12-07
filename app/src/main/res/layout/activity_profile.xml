@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#F5F5F5">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="0dp">
+
+        <!-- 🔹 Header -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="56dp" android:orientation="horizontal" android:background="#03DAC5" android:gravity="center_vertical" android:paddingHorizontal="16dp" android:elevation="6dp">
+
+            <Button android:id="@+id/btnBack" android:layout_width="40dp" android:layout_height="40dp" android:text="←" android:textSize="20sp" android:textColor="@android:color/white" android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Thông tin cá nhân" android:textSize="20sp" android:textColor="@android:color/white" android:textStyle="bold" android:gravity="center" />
+
+            <View android:layout_width="40dp" android:layout_height="40dp" />
+        </LinearLayout>
+
+        <!-- 🔹 Thông tin cá nhân -->
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="16dp" app:cardCornerRadius="12dp" app:cardElevation="4dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="👤 Thông tin" android:textSize="18sp" android:textStyle="bold" android:textColor="#333333" android:layout_marginBottom="16dp" />
+
+                <!-- Username -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tên người dùng" android:textSize="12sp" android:textColor="#666666" />
+
+                        <TextView android:id="@+id/tvUsername" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Loading..." android:textSize="16sp" android:textColor="#333333" android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <Button android:id="@+id/btnChangeUsername" android:layout_width="wrap_content" android:layout_height="36dp" android:text="Đổi tên" android:textSize="12sp" android:backgroundTint="#03DAC5" android:textColor="@android:color/white" />
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginVertical="12dp" />
+
+                <!-- Email -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginBottom="12dp">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📧 Email" android:textSize="12sp" android:textColor="#666666" />
+
+                    <TextView android:id="@+id/tvEmail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Loading..." android:textSize="16sp" android:textColor="#333333" />
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginVertical="12dp" />
+
+                <!-- Created At -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📅 Ngày tham gia" android:textSize="12sp" android:textColor="#666666" />
+
+                    <TextView android:id="@+id/tvCreatedAt" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Loading..." android:textSize="16sp" android:textColor="#333333" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 🔹 Thống kê -->
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="16dp" android:layout_marginBottom="16dp" app:cardCornerRadius="12dp" app:cardElevation="4dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📊 Thống kê" android:textSize="18sp" android:textStyle="bold" android:textColor="#333333" android:layout_marginBottom="16dp" />
+
+                <!-- Sự kiện cá nhân -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="• Sự kiện cá nhân" android:textSize="14sp" android:textColor="#666666" />
+
+                    <TextView android:id="@+id/tvPersonalEventsCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="16sp" android:textStyle="bold" android:textColor="#03DAC5" />
+                </LinearLayout>
+
+                <!-- Nhóm quản lý -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
+
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="• Nhóm quản lý" android:textSize="14sp" android:textColor="#666666" />
+
+                    <TextView android:id="@+id/tvManagedGroupsCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="16sp" android:textStyle="bold" android:textColor="#BB86FC" />
+                </LinearLayout>
+
+                <!-- Nhóm được mời -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="• Nhóm được mời" android:textSize="14sp" android:textColor="#666666" />
+
+                    <TextView android:id="@+id/tvInvitedGroupsCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="16sp" android:textStyle="bold" android:textColor="#FF6F00" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 🔹 Các hành động -->
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="16dp" android:layout_marginBottom="16dp" app:cardCornerRadius="12dp" app:cardElevation="4dp">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+
+                <Button android:id="@+id/btnChangePassword" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🔒 Đổi mật khẩu" android:textSize="16sp" android:backgroundTint="#03DAC5" android:textColor="@android:color/white" android:layout_marginBottom="12dp" />
+
+                <Button android:id="@+id/btnDeleteAccount" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🗑️ Xóa tài khoản" android:textSize="16sp" android:backgroundTint="#F44336" android:textColor="@android:color/white" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>
