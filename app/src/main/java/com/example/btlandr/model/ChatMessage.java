@@ -6,6 +6,8 @@ public class ChatMessage {
     private String senderName;
     private String message;
     private long timestamp;
+    private String fileUrl;
+    private String fileType; // "image" or "file"
 
     public ChatMessage() {
     }
@@ -56,5 +58,21 @@ public class ChatMessage {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
     }
 }

@@ -1,15 +1,19 @@
 package com.example.btlandr.adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.bumptech.glide.Glide;
 import com.example.btlandr.R;
 import com.example.btlandr.model.ChatMessage;
 
@@ -45,12 +49,61 @@ public class ChatAdapter extends ArrayAdapter<ChatMessage> {
         LinearLayout messageBubble = convertView.findViewById(R.id.messageBubble);
 
         senderName.setText(message.getSenderName());
-        messageText.setText(message.getMessage());
 
         // Format time
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
         String timeString = timeFormat.format(new Date(message.getTimestamp()));
         messageTime.setText(timeString);
+
+        // Check if this is a file or image message
+        if (message.getFileUrl() != null && !message.getFileUrl().isEmpty()) {
+            messageText.setVisibility(View.GONE);
+            
+            // Remove existing ImageView if any
+            for (int i = messageBubble.getChildCount() - 1; i >= 0; i--) {
+                View child = messageBubble.getChildAt(i);
+                if (child instanceof ImageView) {
+                    messageBubble.removeViewAt(i);
+                }
+            }
+
+            if ("image".equals(message.getFileType())) {
+                // Display image
+                ImageView imageView = new ImageView(context);
+                imageView.setLayoutParams(new LinearLayout.LayoutParams(200, 200));
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                messageBubble.addView(imageView, 0);
+
+                Glide.with(context)
+                        .load(message.getFileUrl())
+                        .centerCrop()
+                        .into(imageView);
+
+                // Click to open full image
+                imageView.setOnClickListener(v -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(message.getFileUrl()));
+                    context.startActivity(intent);
+                });
+            } else if ("file".equals(message.getFileType())) {
+                // Display file link
+                messageText.setVisibility(View.VISIBLE);
+                messageText.setText("📎 " + message.getMessage());
+                messageText.setTextColor(0xFF2196F3);
+                messageText.setOnClickListener(v -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(message.getFileUrl()));
+                    context.startActivity(intent);
+                });
+            } else {
+                messageText.setVisibility(View.VISIBLE);
+                messageText.setText(message.getMessage());
+            }
+        } else {
+            // Regular text message
+            messageText.setVisibility(View.VISIBLE);
+            messageText.setText(message.getMessage());
+        }
 
         // Align based on sender
         boolean isCurrentUser = message.getSenderUid().equals(currentUserId);

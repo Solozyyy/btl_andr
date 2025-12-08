@@ -1,5 +1,7 @@
 package com.example.btlandr;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,23 +20,31 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class GroupChatActivity extends AppCompatActivity {
+    private static final int PICK_FILE_REQUEST = 1;
+    private static final int PICK_IMAGE_REQUEST = 2;
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    
     private String groupId;
     private String groupName;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
+    private FirebaseStorage storage;
     private String currentUserName = "";
 
     private ListView messagesListView;
     private EditText messageInput;
-    private ImageButton sendButton;
+    private ImageButton sendButton, attachFileButton, attachImageButton;
     private Button backButton;
     private TextView chatHeaderTitle;
 
@@ -54,11 +64,14 @@ public class GroupChatActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
+        storage = FirebaseStorage.getInstance();
 
         // Initialize views
         messagesListView = findViewById(R.id.messagesListView);
         messageInput = findViewById(R.id.messageInput);
         sendButton = findViewById(R.id.sendButton);
+        attachFileButton = findViewById(R.id.attachFileButton);
+        attachImageButton = findViewById(R.id.attachImageButton);
         backButton = findViewById(R.id.backButton);
         chatHeaderTitle = findViewById(R.id.chatHeaderTitle);
 
@@ -76,6 +89,10 @@ public class GroupChatActivity extends AppCompatActivity {
 
         // Set send button
         sendButton.setOnClickListener(v -> sendMessage());
+
+        // Set file/image buttons
+        attachFileButton.setOnClickListener(v -> openFileChooser());
+        attachImageButton.setOnClickListener(v -> openImageChooser());
 
         // Load user name
         if (currentUser != null) {
@@ -177,6 +194,138 @@ public class GroupChatActivity extends AppCompatActivity {
                             messagesListView.setSelection(messagesList.size() - 1);
                         }
                     }
+                });
+    }
+
+    private void openFileChooser() {
+        Intent intent = new Intent();
+        intent.setType("*/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Chọn file"), PICK_FILE_REQUEST);
+    }
+
+    private void openImageChooser() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Chọn ảnh"), PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_FILE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri fileUri = data.getData();
+            uploadFile(fileUri);
+        } else if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri imageUri = data.getData();
+            uploadImage(imageUri);
+        }
+    }
+
+    private void uploadFile(Uri fileUri) {
+        try {
+            // Get file size
+            android.database.Cursor cursor = getContentResolver().query(fileUri, null, null, null, null);
+            int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+            cursor.moveToFirst();
+            long fileSize = cursor.getLong(sizeIndex);
+            cursor.close();
+
+            if (fileSize > MAX_FILE_SIZE) {
+                Toast.makeText(this, "File quá lớn (max 10MB)", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Get file name
+            String fileName = new java.io.File(fileUri.getPath()).getName();
+            if (fileName == null || fileName.isEmpty()) {
+                fileName = "file_" + System.currentTimeMillis();
+            }
+
+            Toast.makeText(this, "Đang upload file...", Toast.LENGTH_SHORT).show();
+
+            StorageReference fileRef = storage.getReference()
+                    .child("chat_files")
+                    .child(groupId)
+                    .child(UUID.randomUUID().toString() + "_" + fileName);
+
+            fileRef.putFile(fileUri)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            sendFileMessage(fileUri, uri.toString(), "file");
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(GroupChatActivity.this, "Lỗi upload: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void uploadImage(Uri imageUri) {
+        try {
+            // Get file size
+            android.database.Cursor cursor = getContentResolver().query(imageUri, null, null, null, null);
+            int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+            cursor.moveToFirst();
+            long fileSize = cursor.getLong(sizeIndex);
+            cursor.close();
+
+            if (fileSize > MAX_FILE_SIZE) {
+                Toast.makeText(this, "Ảnh quá lớn (max 10MB)", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Toast.makeText(this, "Đang upload ảnh...", Toast.LENGTH_SHORT).show();
+
+            StorageReference imageRef = storage.getReference()
+                    .child("chat_images")
+                    .child(groupId)
+                    .child(UUID.randomUUID().toString() + ".jpg");
+
+            imageRef.putFile(imageUri)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            sendFileMessage(imageUri, uri.toString(), "image");
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(GroupChatActivity.this, "Lỗi upload: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void sendFileMessage(Uri fileUri, String downloadUrl, String fileType) {
+        String fileName = "File";
+        if (fileType.equals("file")) {
+            fileName = new java.io.File(fileUri.getPath()).getName();
+            if (fileName == null || fileName.isEmpty()) {
+                fileName = "file_" + System.currentTimeMillis();
+            }
+        } else {
+            fileName = "Image";
+        }
+
+        Map<String, Object> messageData = new HashMap<>();
+        messageData.put("senderUid", currentUser.getUid());
+        messageData.put("senderName", currentUserName);
+        messageData.put("message", fileName);
+        messageData.put("fileUrl", downloadUrl);
+        messageData.put("fileType", fileType);
+        messageData.put("timestamp", System.currentTimeMillis());
+
+        db.collection("Groups").document(groupId)
+                .collection("messages")
+                .add(messageData)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(GroupChatActivity.this, "Đã gửi " + fileType, Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(GroupChatActivity.this, "Lỗi gửi tin nhắn", Toast.LENGTH_SHORT).show();
                 });
     }
 }

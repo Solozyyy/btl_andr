@@ -25,9 +25,10 @@ import java.util.*;
 public class PersonalTaskActivity extends AppCompatActivity {
 
     public enum FilterType {
+        
         DAY, WEEK, MONTH, YEAR, ALL, RANGE
     }
-
+    private String tmp;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
     private String uid;
