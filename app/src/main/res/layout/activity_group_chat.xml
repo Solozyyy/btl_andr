@@ -60,6 +60,28 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
+        <ImageButton
+            android:id="@+id/attachFileButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_attach_file"
+            android:contentDescription="Attach file"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:tint="#FF9800" />
+
+        <ImageButton
+            android:id="@+id/attachImageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_attach_image"
+            android:contentDescription="Attach image"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:tint="#4CAF50" />
+
         <EditText
             android:id="@+id/messageInput"
             android:layout_width="0dp"

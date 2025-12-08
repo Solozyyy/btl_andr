@@ -2,6 +2,7 @@ package com.example.btlandr;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,7 +13,7 @@ import java.util.*;
 public class GroupDetailActivity extends AppCompatActivity {
 
     private TextView groupNameText, adminEmailText;
-    private Button deleteGroupButton, addMemberButton, addGroupTaskButton, groupChatButton, renameGroupButton;
+    private Button deleteGroupButton, addMemberButton, addGroupTaskButton, groupChatButton, renameGroupButton, zoomMeetingButton;
     private ListView membersListView;
 
     private LinearLayout containerOngoing, containerUpcoming, containerPast;
@@ -41,6 +42,7 @@ public class GroupDetailActivity extends AppCompatActivity {
         addGroupTaskButton = findViewById(R.id.addGroupTaskButton);
         groupChatButton = findViewById(R.id.groupChatButton);
         renameGroupButton = findViewById(R.id.renameGroupButton);
+        zoomMeetingButton = findViewById(R.id.zoomMeetingButton);
         membersListView = findViewById(R.id.membersListView);
 
         containerOngoing = findViewById(R.id.containerOngoing);
@@ -69,6 +71,7 @@ public class GroupDetailActivity extends AppCompatActivity {
         addMemberButton.setOnClickListener(v -> showAddMemberDialog());
         deleteGroupButton.setOnClickListener(v -> confirmDeleteGroup());
         renameGroupButton.setOnClickListener(v -> showRenameGroupDialog());
+        zoomMeetingButton.setOnClickListener(v -> handleZoomMeeting());
         groupChatButton.setOnClickListener(v -> {
             Intent i = new Intent(this, GroupChatActivity.class);
             i.putExtra("groupId", groupId);
@@ -88,6 +91,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
         loadMembers();
         loadGroupTasks(); // 🔹 Realtime listener task
+        loadZoomMeetingStatus(); // 🔹 Realtime listener for zoom meeting
     }
 
     // -------------------- 🔸 LOAD MEMBERS --------------------
@@ -220,6 +224,86 @@ public class GroupDetailActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    // -------------------- 🔸 ZOOM MEETING --------------------
+    private void handleZoomMeeting() {
+        if (!isAdmin) {
+            Toast.makeText(this, "Chỉ quản lý nhóm mới có thể tạo meeting", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check if meeting already exists
+        db.collection("ZoomMeetings").document(groupId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        String meetingLink = doc.getString("meetingLink");
+                        showZoomOptions(meetingLink);
+                    } else {
+                        createZoomMeeting();
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void createZoomMeeting() {
+        String meetingLink = "https://zoom.us/meeting/" + groupId + "_" + System.currentTimeMillis();
+
+        Map<String, Object> meetingData = new HashMap<>();
+        meetingData.put("groupId", groupId);
+        meetingData.put("groupName", groupName);
+        meetingData.put("meetingLink", meetingLink);
+        meetingData.put("createdBy", currentUid);
+        meetingData.put("createdAt", System.currentTimeMillis());
+        meetingData.put("isActive", true);
+
+        db.collection("ZoomMeetings").document(groupId)
+                .set(meetingData)
+                .addOnSuccessListener(a -> {
+                    Toast.makeText(this, "Đã tạo phòng họp!", Toast.LENGTH_SHORT).show();
+                    showZoomOptions(meetingLink);
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void showZoomOptions(String meetingLink) {
+        new AlertDialog.Builder(this)
+                .setTitle("Phòng họp Zoom")
+                .setMessage(meetingLink)
+                .setPositiveButton("Tham gia", (d, w) -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(meetingLink));
+                    startActivity(intent);
+                })
+                .setNeutralButton("Sao chép link", (d, w) -> {
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    android.content.ClipData clip = android.content.ClipData.newPlainText("Zoom Link", meetingLink);
+                    clipboard.setPrimaryClip(clip);
+                    Toast.makeText(this, "Đã sao chép link!", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Kết thúc", (d, w) -> endZoomMeeting())
+                .show();
+    }
+
+    private void endZoomMeeting() {
+        db.collection("ZoomMeetings").document(groupId)
+                .delete()
+                .addOnSuccessListener(a -> Toast.makeText(this, "Đã kết thúc phòng họp!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void loadZoomMeetingStatus() {
+        db.collection("ZoomMeetings").document(groupId)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (snapshot != null && snapshot.exists()) {
+                        zoomMeetingButton.setText("🔴 Phòng họp đang diễn ra");
+                        zoomMeetingButton.setBackgroundColor(0xFFF44336); // Red
+                    } else {
+                        zoomMeetingButton.setText("📹 Tạo phòng họp");
+                        zoomMeetingButton.setBackgroundColor(0xFF2196F3); // Blue
+                    }
+                });
     }
 
     // -------------------- 🔸 LOAD GROUP TASKS --------------------
