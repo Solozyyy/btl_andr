@@ -328,13 +328,34 @@ public class GroupDetailActivity extends AppCompatActivity {
                         itemLayout.setOrientation(LinearLayout.HORIZONTAL);
                         itemLayout.setPadding(16, 8, 16, 8);
 
+                        // Thêm CheckBox
+                        CheckBox checkBox = new CheckBox(this);
+                        checkBox.setButtonTintList(android.content.res.ColorStateList.valueOf(0xFF4CAF50));
+                        LinearLayout.LayoutParams cbParams = new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        cbParams.setMarginEnd(12);
+                        checkBox.setLayoutParams(cbParams);
+                        itemLayout.addView(checkBox);
+
                         TextView titleView = new TextView(this);
-                        titleView.setText("• " + ev.getTitle() + " (" + new Date(ev.getStartTime()) + ")");
+                        titleView.setText("• " + ev.getTitle() + " (" + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(ev.getStartTime())) + ")");
                         titleView.setTextSize(15);
                         titleView.setLayoutParams(new LinearLayout.LayoutParams(
                                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-
                         itemLayout.addView(titleView);
+
+                        // Xử lý hiệu ứng khi check
+                        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                            if (isChecked) {
+                                titleView.setPaintFlags(titleView.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                                titleView.setTextColor(0xFF388E3C); // Xanh lá đậm
+                                itemLayout.setBackgroundColor(0xFFE8F5E9); // Nền xanh lá nhạt
+                            } else {
+                                titleView.setPaintFlags(titleView.getPaintFlags() & (~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG));
+                                titleView.setTextColor(0xFF212121); // Màu mặc định
+                                itemLayout.setBackgroundColor(0xFFFFFFFF); // Nền trắng
+                            }
+                        });
 
                         // 🔹 Nút xóa (chỉ admin thấy)
                         if (isAdmin) {
