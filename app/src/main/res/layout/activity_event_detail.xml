@@ -145,6 +145,7 @@
 
             <!-- Category Card - Cải thiện layout -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardCategory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -426,6 +427,7 @@
                         android:paddingEnd="4dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

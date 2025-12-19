@@ -8,10 +8,12 @@ public class Event {
     private long endTime;
     private String category = "Cá nhân";
     private boolean important; // ⭐ Thêm trường mới
+    private boolean done = false; // Đánh dấu hoàn thành
 
     // Constructor mặc định (bắt buộc cho Firestore)
     public Event() {
     }
+
 
     // Constructor đầy đủ
     public Event(String title, String note, long startTime, long endTime, String category) {
@@ -21,6 +23,7 @@ public class Event {
         this.endTime = endTime;
         this.category = category;
         this.important = false; // Mặc định không quan trọng
+        this.done = false;
     }
 
     // Constructor với important
@@ -31,6 +34,25 @@ public class Event {
         this.endTime = endTime;
         this.category = category;
         this.important = important;
+        this.done = false;
+    }
+
+    // Constructor với done
+    public Event(String title, String note, long startTime, long endTime, String category, boolean important, boolean done) {
+        this.title = title;
+        this.note = note;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.category = category;
+        this.important = important;
+        this.done = done;
+    }
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
     }
 
     // Getters và Setters

@@ -112,6 +112,45 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         holder.txtStatus.setBackgroundColor(statusBgColor);
         holder.colorBar.setBackgroundColor(barColor);
 
+        // --- Xử lý CheckBox hoàn thành ---
+        holder.checkDone.setOnCheckedChangeListener(null); // tránh trigger khi recycle
+        holder.checkDone.setChecked(event.isDone());
+
+        // Đổi màu nền khi hoàn thành
+        View itemRoot = ((View) holder.txtTitle.getRootView()).findViewById(R.id.itemRoot);
+        if (itemRoot != null) {
+            if (event.isDone()) {
+                itemRoot.setBackgroundColor(Color.parseColor("#E8F5E9")); // xanh lá nhạt
+            } else {
+                itemRoot.setBackgroundColor(Color.WHITE);
+            }
+        }
+
+        // Giao diện khi hoàn thành
+        if (event.isDone()) {
+            holder.txtTitle.setPaintFlags(holder.txtTitle.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            holder.txtTitle.setTextColor(Color.GRAY);
+            holder.itemView.setAlpha(0.5f);
+        } else {
+            holder.txtTitle.setPaintFlags(holder.txtTitle.getPaintFlags() & (~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG));
+            holder.txtTitle.setTextColor(Color.parseColor("#212121"));
+            holder.itemView.setAlpha(1.0f);
+        }
+
+        holder.checkDone.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            event.setDone(isChecked);
+            // Đổi màu nền khi tích
+            if (itemRoot != null) {
+                if (isChecked) {
+                    itemRoot.setBackgroundColor(Color.parseColor("#E8F5E9"));
+                } else {
+                    itemRoot.setBackgroundColor(Color.WHITE);
+                }
+            }
+            notifyItemChanged(position);
+            // TODO: Nếu cần lưu trạng thái done lên Firestore thì gọi callback ở đây
+        });
+
         // Set click listeners
         holder.btnDelete.setOnClickListener(v -> {
             if (listener != null)
@@ -150,6 +189,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         MaterialButton btnDelete, btnDetail;
         ImageView iconImportant;
         View colorBar;
+        android.widget.CheckBox checkDone;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -162,6 +202,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             btnDetail = itemView.findViewById(R.id.btnDetail);
             iconImportant = itemView.findViewById(R.id.iconImportant);
             colorBar = itemView.findViewById(R.id.colorBar);
+            checkDone = itemView.findViewById(R.id.checkDone);
         }
     }
 }

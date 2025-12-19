@@ -35,6 +35,7 @@ public class EventDetailActivity extends AppCompatActivity {
         ImageView importantIcon = findViewById(R.id.importantIcon); // ⭐ Thêm icon
         TextView importantText = findViewById(R.id.importantText); // ⭐ Thêm text
         MaterialCardView importantCard = findViewById(R.id.importantCard); // ⭐ Thêm card
+        MaterialCardView cardCategory = findViewById(R.id.cardCategory);
 
         // Lấy dữ liệu từ Intent
         String title = getIntent().getStringExtra("title");
@@ -42,7 +43,7 @@ public class EventDetailActivity extends AppCompatActivity {
         long start = getIntent().getLongExtra("start", 0);
         long end = getIntent().getLongExtra("end", 0);
         String category = getIntent().getStringExtra("category");
-        String group = getIntent().getStringExtra("group");
+        String groupId = getIntent().getStringExtra("groupId"); // Lấy groupId nếu có
         boolean important = getIntent().getBooleanExtra("important", false); // ⭐ Lấy important
 
         // Format thời gian
@@ -74,6 +75,19 @@ public class EventDetailActivity extends AppCompatActivity {
         } else {
             noteText.setText(note);
             noteCard.setVisibility(View.VISIBLE);
+        }
+
+        // Ẩn/hiện navigation nhóm bằng card danh mục
+        if (groupId != null && !groupId.isEmpty()) {
+            cardCategory.setClickable(true);
+            cardCategory.setFocusable(true);
+            cardCategory.setOnClickListener(v -> {
+                android.content.Intent i = new android.content.Intent(this, GroupDetailActivity.class);
+                i.putExtra("groupId", groupId);
+                startActivity(i);
+            });
+        } else {
+            cardCategory.setClickable(false);
         }
     }
 
