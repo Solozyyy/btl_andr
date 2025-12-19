@@ -8,7 +8,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import android.widget.CheckBox;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
@@ -19,18 +18,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
-    // Hàm cập nhật UI khi check hoặc bỏ check
-    private void updateEventDoneUI(ViewHolder holder, boolean isChecked) {
-        if (isChecked) {
-            holder.txtTitle.setPaintFlags(holder.txtTitle.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
-            holder.txtTitle.setTextColor(Color.parseColor("#388E3C")); // Xanh lá đậm
-            holder.itemView.setBackgroundColor(Color.parseColor("#E8F5E9")); // Nền xanh lá nhạt
-        } else {
-            holder.txtTitle.setPaintFlags(holder.txtTitle.getPaintFlags() & (~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG));
-            holder.txtTitle.setTextColor(Color.parseColor("#212121")); // Màu mặc định
-            holder.itemView.setBackgroundColor(Color.WHITE);
-        }
-    }
 
     private List<Event> eventList;
     private OnEventActionListener listener;
@@ -90,19 +77,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             holder.txtNote.setVisibility(View.VISIBLE);
             holder.txtNote.setText(event.getNote());
         }
-
-        // Lấy CheckBox từ holder
-        if (holder.checkDone == null) {
-            holder.checkDone = holder.itemView.findViewById(R.id.checkDone);
-        }
-
-        // Thiết lập trạng thái và hiệu ứng cho CheckBox
-        holder.checkDone.setOnCheckedChangeListener(null);
-        holder.checkDone.setChecked(false);
-        updateEventDoneUI(holder, holder.checkDone.isChecked());
-        holder.checkDone.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            updateEventDoneUI(holder, isChecked);
-        });
 
         // Xác định trạng thái và đổi màu
         String status;
@@ -172,7 +146,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         ImageView iconImportant;
         View colorBar;
 
-        CheckBox checkDone;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             txtTitle = itemView.findViewById(R.id.txtTitle);
@@ -184,7 +157,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
             btnDetail = itemView.findViewById(R.id.btnDetail);
             iconImportant = itemView.findViewById(R.id.iconImportant);
             colorBar = itemView.findViewById(R.id.colorBar);
-            checkDone = itemView.findViewById(R.id.checkDone);
         }
     }
 }
