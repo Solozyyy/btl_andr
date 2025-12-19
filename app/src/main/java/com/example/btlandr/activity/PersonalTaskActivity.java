@@ -210,6 +210,7 @@ public class PersonalTaskActivity extends AppCompatActivity {
         i.putExtra("start", event.getStartTime());
         i.putExtra("end", event.getEndTime());
         i.putExtra("category", event.getCategory());
+        i.putExtra("important", event.isImportant());
         startActivity(i);
     }
 
