@@ -127,6 +127,17 @@ public class AllGroupEventsFragment extends Fragment {
 
         @Override
         public void onDetail(Event event) {
+            // Tìm groupId thực tế từ groupTasksMap (dựa vào tên nhóm = event.getCategory())
+            String groupIdForEvent = null;
+            for (Map.Entry<String, List<Event>> entry : groupTasksMap.entrySet()) {
+                for (Event e : entry.getValue()) {
+                    if (e == event) {
+                        groupIdForEvent = entry.getKey();
+                        break;
+                    }
+                }
+                if (groupIdForEvent != null) break;
+            }
             Intent i = new Intent(getContext(), EventDetailActivity.class);
             i.putExtra("title", event.getTitle());
             i.putExtra("note", event.getNote());
@@ -134,6 +145,9 @@ public class AllGroupEventsFragment extends Fragment {
             i.putExtra("end", event.getEndTime());
             i.putExtra("category", event.getCategory());
             i.putExtra("important", event.isImportant());
+            if (groupIdForEvent != null) {
+                i.putExtra("groupId", groupIdForEvent);
+            }
             startActivity(i);
         }
     };

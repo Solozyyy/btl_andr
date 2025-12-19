@@ -61,18 +61,27 @@ public class GroupDetailActivity extends AppCompatActivity {
         groupName = getIntent().getStringExtra("groupName");
         adminId = getIntent().getStringExtra("adminId");
         adminEmail = getIntent().getStringExtra("adminEmail");
-        String groupName = getIntent().getStringExtra("groupName");
 
-        groupNameText.setText("Tên nhóm: " + groupName);
-        adminEmailText.setText("Quản lý: " + adminEmail);
+        // Nếu thiếu thông tin group, lấy từ Firestore
+        if (groupName == null || adminId == null || adminEmail == null) {
+            db.collection("Groups").document(groupId).get().addOnSuccessListener(doc -> {
+                if (doc.exists()) {
+                    groupName = doc.getString("groupName");
+                    adminId = doc.getString("adminId");
+                    adminEmail = doc.getString("adminEmail");
 
-        isAdmin = currentUid.equals(adminId);
+                    groupNameText.setText("Tên nhóm: " + (groupName != null ? groupName : ""));
+                    adminEmailText.setText("Quản lý: " + (adminEmail != null ? adminEmail : ""));
 
-        if (!isAdmin) {
-            addMemberButton.setVisibility(Button.GONE);
-            deleteGroupButton.setVisibility(Button.GONE);
-            addGroupTaskButton.setVisibility(Button.GONE);
-            renameGroupButton.setVisibility(Button.GONE);
+                    isAdmin = currentUid.equals(adminId);
+                    updateAdminUI();
+                }
+            });
+        } else {
+            groupNameText.setText("Tên nhóm: " + groupName);
+            adminEmailText.setText("Quản lý: " + adminEmail);
+            isAdmin = currentUid.equals(adminId);
+            updateAdminUI();
         }
 
         addMemberButton.setOnClickListener(v -> showAddMemberDialog());
@@ -82,7 +91,7 @@ public class GroupDetailActivity extends AppCompatActivity {
         groupChatButton.setOnClickListener(v -> {
             Intent i = new Intent(this, GroupChatActivity.class);
             i.putExtra("groupId", groupId);
-            i.putExtra("groupName", getIntent().getStringExtra("groupName"));
+            i.putExtra("groupName", groupName);
             startActivity(i);
         });
         addGroupTaskButton.setOnClickListener(v -> {
@@ -99,6 +108,21 @@ public class GroupDetailActivity extends AppCompatActivity {
         loadMembers();
         loadGroupTasks(); // 🔹 Realtime listener task
         loadZoomMeetingStatus(); // 🔹 Realtime listener for zoom meeting
+    }
+
+    // Helper để cập nhật UI admin
+    private void updateAdminUI() {
+        if (!isAdmin) {
+            addMemberButton.setVisibility(Button.GONE);
+            deleteGroupButton.setVisibility(Button.GONE);
+            addGroupTaskButton.setVisibility(Button.GONE);
+            renameGroupButton.setVisibility(Button.GONE);
+        } else {
+            addMemberButton.setVisibility(Button.VISIBLE);
+            deleteGroupButton.setVisibility(Button.VISIBLE);
+            addGroupTaskButton.setVisibility(Button.VISIBLE);
+            renameGroupButton.setVisibility(Button.VISIBLE);
+        }
     }
 
     // -------------------- 🔸 LOAD MEMBERS --------------------
@@ -336,13 +360,48 @@ public class GroupDetailActivity extends AppCompatActivity {
                         itemLayout.setOrientation(LinearLayout.HORIZONTAL);
                         itemLayout.setPadding(16, 8, 16, 8);
 
+                        // Checkbox hoàn thành
+                        CheckBox checkDone = new CheckBox(this);
+                        checkDone.setChecked(ev.isDone());
+                        checkDone.setButtonTintList(android.content.res.ColorStateList.valueOf(0xFF4CAF50));
+                        itemLayout.addView(checkDone);
+
                         TextView titleView = new TextView(this);
                         titleView.setText("• " + ev.getTitle() + " (" + new Date(ev.getStartTime()) + ")");
                         titleView.setTextSize(15);
                         titleView.setLayoutParams(new LinearLayout.LayoutParams(
                                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
+                        // Giao diện khi hoàn thành
+                        if (ev.isDone()) {
+                            titleView.setPaintFlags(titleView.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                            titleView.setTextColor(0xFF757575);
+                            itemLayout.setAlpha(0.5f);
+                        } else {
+                            titleView.setPaintFlags(titleView.getPaintFlags() & (~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG));
+                            titleView.setTextColor(0xFF212121);
+                            itemLayout.setAlpha(1.0f);
+                        }
+
                         itemLayout.addView(titleView);
+
+                        // Sự kiện tích/bỏ tích
+                        checkDone.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                            ev.setDone(isChecked);
+                            // Cập nhật UI
+                            if (isChecked) {
+                                titleView.setPaintFlags(titleView.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                                titleView.setTextColor(0xFF757575);
+                                itemLayout.setAlpha(0.5f);
+                            } else {
+                                titleView.setPaintFlags(titleView.getPaintFlags() & (~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG));
+                                titleView.setTextColor(0xFF212121);
+                                itemLayout.setAlpha(1.0f);
+                            }
+                            // Lưu trạng thái lên Firestore
+                            db.collection("Groups").document(groupId).collection("tasks").document(eventId)
+                                    .update("done", isChecked);
+                        });
 
                         // 🔹 Nút xóa (chỉ admin thấy)
                         if (isAdmin) {
