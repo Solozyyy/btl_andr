@@ -1,10 +1,12 @@
-package com.example.btlandr;
+package com.example.btlandr.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.widget.Toast;
+
+import com.example.btlandr.util.NetworkUtil;
 
 public class ConnectivityReceiver extends BroadcastReceiver {
     @Override

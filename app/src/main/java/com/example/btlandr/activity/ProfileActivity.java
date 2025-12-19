@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -9,6 +9,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.btlandr.R;
 
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;

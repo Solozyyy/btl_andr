@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.adapter;
 
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.btlandr.R;
+import com.example.btlandr.model.Event;
 import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
@@ -27,6 +29,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
     // Interface callback
     public interface OnEventActionListener {
         void onDelete(String eventId);
+
         void onDetail(Event event);
     }
 
@@ -111,11 +114,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
         // Set click listeners
         holder.btnDelete.setOnClickListener(v -> {
-            if (listener != null) listener.onDelete(event.getId());
+            if (listener != null)
+                listener.onDelete(event.getId());
         });
 
         holder.btnDetail.setOnClickListener(v -> {
-            if (listener != null) listener.onDetail(event);
+            if (listener != null)
+                listener.onDetail(event);
         });
     }
 

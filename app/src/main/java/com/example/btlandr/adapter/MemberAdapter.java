@@ -1,8 +1,11 @@
-package com.example.btlandr;
+package com.example.btlandr.adapter;
 
 import android.content.Context;
 import android.view.*;
 import android.widget.*;
+
+import com.example.btlandr.R;
+
 import java.util.*;
 
 public class MemberAdapter extends ArrayAdapter<String> {
@@ -16,7 +19,8 @@ public class MemberAdapter extends ArrayAdapter<String> {
     private final boolean isAdmin;
     private final OnMemberActionListener listener;
 
-    public MemberAdapter(Context context, List<String> uids, List<String> infos, boolean isAdmin, OnMemberActionListener listener) {
+    public MemberAdapter(Context context, List<String> uids, List<String> infos, boolean isAdmin,
+            OnMemberActionListener listener) {
         super(context, 0, infos);
         this.uids = uids;
         this.infos = infos;

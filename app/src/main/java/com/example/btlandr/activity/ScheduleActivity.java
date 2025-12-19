@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -8,6 +8,12 @@ import android.app.*;
 import android.os.*;
 import android.widget.*;
 import android.content.Intent;
+
+import com.example.btlandr.R;
+import com.example.btlandr.activity.EventDetailActivity;
+import com.example.btlandr.adapter.EventAdapter;
+import com.example.btlandr.model.Event;
+import com.example.btlandr.receiver.ReminderReceiver;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 import java.util.*;
@@ -122,14 +128,12 @@ public class ScheduleActivity extends AppCompatActivity {
                             },
                             now.get(Calendar.HOUR_OF_DAY),
                             now.get(Calendar.MINUTE),
-                            true
-                    );
+                            true);
                     timeDialog.show();
                 },
                 now.get(Calendar.YEAR),
                 now.get(Calendar.MONTH),
-                now.get(Calendar.DAY_OF_MONTH)
-        );
+                now.get(Calendar.DAY_OF_MONTH));
         dateDialog.show();
     }
 
@@ -144,7 +148,8 @@ public class ScheduleActivity extends AppCompatActivity {
         db.collection("UserAccount").document(uid).collection("events")
                 .orderBy("startTime", Query.Direction.ASCENDING)
                 .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) return;
+                    if (e != null)
+                        return;
                     eventList.clear();
                     for (QueryDocumentSnapshot doc : snapshots) {
                         Event event = doc.toObject(Event.class);
@@ -180,8 +185,7 @@ public class ScheduleActivity extends AppCompatActivity {
                 this,
                 (int) System.currentTimeMillis(),
                 intent,
-                PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_IMMUTABLE);
 
         am.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pi);
     }
@@ -191,12 +195,12 @@ public class ScheduleActivity extends AppCompatActivity {
             NotificationChannel channel = new NotificationChannel(
                     "reminder_channel",
                     "Reminder Channel",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
+                    NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription("Nhắc nhở lịch học và sự kiện");
 
             NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) manager.createNotificationChannel(channel);
+            if (manager != null)
+                manager.createNotificationChannel(channel);
         }
     }
 }

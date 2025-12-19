@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.fragment;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -16,6 +16,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.btlandr.R;
+import com.example.btlandr.activity.GroupDetailActivity;
+import com.example.btlandr.activity.GroupTaskActivity;
+import com.example.btlandr.adapter.GroupAdapter;
+import com.example.btlandr.model.Group;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 
@@ -45,7 +50,8 @@ public class InvitedGroupsFragment extends Fragment {
 
         // Lắng nghe mọi thay đổi trong Groups
         db.collection("Groups").addSnapshotListener((snapshots, e) -> {
-            if (e != null || snapshots == null) return;
+            if (e != null || snapshots == null)
+                return;
 
             for (QueryDocumentSnapshot doc : snapshots) {
 
@@ -54,10 +60,12 @@ public class InvitedGroupsFragment extends Fragment {
                 newGroup.setId(groupId);
 
                 List<String> newMembers = newGroup.getMembers();
-                if (newMembers == null) newMembers = new ArrayList<>();
+                if (newMembers == null)
+                    newMembers = new ArrayList<>();
 
                 List<String> oldMembers = lastMembersMap.get(groupId);
-                if (oldMembers == null) oldMembers = new ArrayList<>();
+                if (oldMembers == null)
+                    oldMembers = new ArrayList<>();
 
                 boolean wasNotMember = !oldMembers.contains(uid);
                 boolean isNowMember = newMembers.contains(uid);
@@ -83,8 +91,8 @@ public class InvitedGroupsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_invited_groups, container, false);
 
@@ -133,7 +141,8 @@ public class InvitedGroupsFragment extends Fragment {
 
     private void showInviteNotification(String groupName, String adminEmail) {
         Context context = getContext();
-        if (context == null) return;
+        if (context == null)
+            return;
 
         String channelId = "invite_channel";
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -142,8 +151,7 @@ public class InvitedGroupsFragment extends Fragment {
             NotificationChannel channel = new NotificationChannel(
                     channelId,
                     "Lời mời nhóm",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
+                    NotificationManager.IMPORTANCE_HIGH);
             nm.createNotificationChannel(channel);
         }
 

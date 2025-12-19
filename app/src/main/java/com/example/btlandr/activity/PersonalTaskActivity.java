@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,6 +15,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
 
+import com.example.btlandr.R;
+import com.example.btlandr.activity.AddPersonalTaskActivity;
+import com.example.btlandr.activity.EventDetailActivity;
+import com.example.btlandr.adapter.EventAdapter;
+import com.example.btlandr.model.Event;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,9 +30,10 @@ import java.util.*;
 public class PersonalTaskActivity extends AppCompatActivity {
 
     public enum FilterType {
-        
+
         DAY, WEEK, MONTH, YEAR, ALL, RANGE
     }
+
     private String tmp;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
@@ -163,26 +169,31 @@ public class PersonalTaskActivity extends AppCompatActivity {
         switch (filterType) {
 
             case RANGE:
-                if (rangeStart == 0 || rangeEnd == 0) return false;
+                if (rangeStart == 0 || rangeEnd == 0)
+                    return false;
                 return start <= rangeEnd && end >= rangeStart;
 
             case DAY:
-                if (isOngoing) return true;
+                if (isOngoing)
+                    return true;
                 return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
                         cal.get(Calendar.DAY_OF_YEAR) == eventCal.get(Calendar.DAY_OF_YEAR);
 
             case WEEK:
-                if (isOngoing) return true;
+                if (isOngoing)
+                    return true;
                 return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
                         cal.get(Calendar.WEEK_OF_YEAR) == eventCal.get(Calendar.WEEK_OF_YEAR);
 
             case MONTH:
-                if (isOngoing) return true;
+                if (isOngoing)
+                    return true;
                 return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
                         cal.get(Calendar.MONTH) == eventCal.get(Calendar.MONTH);
 
             case YEAR:
-                if (isOngoing) return true;
+                if (isOngoing)
+                    return true;
                 return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR);
 
             case ALL:
@@ -190,8 +201,6 @@ public class PersonalTaskActivity extends AppCompatActivity {
                 return true;
         }
     }
-
-
 
     // 🧩 Hàm mở chi tiết sự kiện
     private void openDetail(Event event) {
@@ -225,7 +234,8 @@ public class PersonalTaskActivity extends AppCompatActivity {
                             Event e = doc.toObject(Event.class);
                             e.setId(doc.getId());
 
-                            if (!matchFilter(e, currentFilter)) continue; // ⬅️ lọc ở đây
+                            if (!matchFilter(e, currentFilter))
+                                continue; // ⬅️ lọc ở đây
 
                             long start = e.getStartTime();
                             long end = e.getEndTime();
@@ -336,6 +346,7 @@ public class PersonalTaskActivity extends AppCompatActivity {
 
         }
     }
+
     private void applyFilter(FilterType type, BottomSheetDialog dialog) {
         currentFilter = type;
         loadEvents();
@@ -349,6 +360,7 @@ public class PersonalTaskActivity extends AppCompatActivity {
 
         updateFilterDisplay(currentFilter);
     }
+
     private void showFilterBottomSheet() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.bottom_filter_event, null);
@@ -375,19 +387,18 @@ public class PersonalTaskActivity extends AppCompatActivity {
 
                     if (isStart) {
                         rangeStart = chosen.getTimeInMillis();
-                        btnStartDate.setText("Bắt đầu: " + d + "/" + (m+1) + "/" + y);
+                        btnStartDate.setText("Bắt đầu: " + d + "/" + (m + 1) + "/" + y);
                     } else {
                         chosen.set(y, m, d, 23, 59, 59);
                         rangeEnd = chosen.getTimeInMillis();
-                        btnEndDate.setText("Kết thúc: " + d + "/" + (m+1) + "/" + y);
+                        btnEndDate.setText("Kết thúc: " + d + "/" + (m + 1) + "/" + y);
                     }
 
                     loadEvents();
                 },
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
-                cal.get(Calendar.DAY_OF_MONTH)
-        );
+                cal.get(Calendar.DAY_OF_MONTH));
 
         dialog.show();
     }

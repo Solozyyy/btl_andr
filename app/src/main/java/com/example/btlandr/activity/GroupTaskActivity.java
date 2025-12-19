@@ -1,10 +1,12 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.btlandr.R;
+import com.example.btlandr.adapter.GroupPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -34,7 +36,6 @@ public class GroupTaskActivity extends AppCompatActivity {
                             tab.setText("Nhóm được mời");
                             break;
                     }
-                }
-        ).attach();
+                }).attach();
     }
 }

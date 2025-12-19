@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.fragment;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -19,6 +19,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.btlandr.R;
+import com.example.btlandr.activity.EventDetailActivity;
+import com.example.btlandr.activity.PersonalTaskActivity;
+import com.example.btlandr.adapter.EventAdapter;
+import com.example.btlandr.model.Event;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
@@ -60,8 +65,8 @@ public class AllGroupEventsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_all_group_events, container, false);
 
@@ -153,26 +158,31 @@ public class AllGroupEventsFragment extends Fragment {
         switch (filterType) {
 
             case RANGE:
-                if (rangeStart == 0 || rangeEnd == 0) return false;
+                if (rangeStart == 0 || rangeEnd == 0)
+                    return false;
                 return start <= rangeEnd && end >= rangeStart;
 
             case DAY:
-                if (isOngoing) return true;
+                if (isOngoing)
+                    return true;
                 return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
                         cal.get(Calendar.DAY_OF_YEAR) == eventCal.get(Calendar.DAY_OF_YEAR);
 
             case WEEK:
-                if (isOngoing) return true;
+                if (isOngoing)
+                    return true;
                 return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
                         cal.get(Calendar.WEEK_OF_YEAR) == eventCal.get(Calendar.WEEK_OF_YEAR);
 
             case MONTH:
-                if (isOngoing) return true;
+                if (isOngoing)
+                    return true;
                 return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR) &&
                         cal.get(Calendar.MONTH) == eventCal.get(Calendar.MONTH);
 
             case YEAR:
-                if (isOngoing) return true;
+                if (isOngoing)
+                    return true;
                 return cal.get(Calendar.YEAR) == eventCal.get(Calendar.YEAR);
 
             case ALL:
@@ -219,6 +229,7 @@ public class AllGroupEventsFragment extends Fragment {
             }
         }
     }
+
     private void loadAllGroupEventsRealtime() {
         // Lắng nghe realtime các nhóm mà user tham gia
         db.collection("Groups")
@@ -239,6 +250,7 @@ public class AllGroupEventsFragment extends Fragment {
                     if (groupSnapshots != null && !groupSnapshots.isEmpty()) {
                         for (QueryDocumentSnapshot groupDoc : groupSnapshots) {
                             String groupId = groupDoc.getId();
+                            String groupName = groupDoc.getString("name"); // ✅ Lấy tên nhóm
 
                             // Lắng nghe realtime các task của từng nhóm
                             ListenerRegistration reg = db.collection("Groups")
@@ -256,8 +268,8 @@ public class AllGroupEventsFragment extends Fragment {
                                         if (taskSnapshots != null) {
                                             for (QueryDocumentSnapshot taskDoc : taskSnapshots) {
                                                 Event eTask = taskDoc.toObject(Event.class);
-
                                                 eTask.setId(taskDoc.getId());
+                                                eTask.setCategory(groupName); // ✅ Set tên nhóm vào category
                                                 tasksOfThisGroup.add(eTask);
                                             }
                                         }
@@ -287,8 +299,9 @@ public class AllGroupEventsFragment extends Fragment {
         // Gộp tất cả tasks từ các groups
         for (List<Event> tasks : groupTasksMap.values()) {
             for (Event event : tasks) {
-                if (!matchFilter(event, currentFilter)) continue;
-                
+                if (!matchFilter(event, currentFilter))
+                    continue;
+
                 if (event.getEndTime() < now) {
                     pastEvents.add(event);
                 } else if (event.getStartTime() <= now && event.getEndTime() >= now) {
@@ -300,9 +313,12 @@ public class AllGroupEventsFragment extends Fragment {
         }
 
         // Cập nhật adapter
-        if (adapterOngoing != null) adapterOngoing.notifyDataSetChanged();
-        if (adapterUpcoming != null) adapterUpcoming.notifyDataSetChanged();
-        if (adapterPast != null) adapterPast.notifyDataSetChanged();
+        if (adapterOngoing != null)
+            adapterOngoing.notifyDataSetChanged();
+        if (adapterUpcoming != null)
+            adapterUpcoming.notifyDataSetChanged();
+        if (adapterPast != null)
+            adapterPast.notifyDataSetChanged();
 
         updateUI(ongoingEvents.size(), upcomingEvents.size(), pastEvents.size());
     }
@@ -346,6 +362,7 @@ public class AllGroupEventsFragment extends Fragment {
 
         }
     }
+
     private void applyFilter(PersonalTaskActivity.FilterType type, BottomSheetDialog dialog) {
         currentFilter = type;
         updateAllLists();
@@ -359,16 +376,23 @@ public class AllGroupEventsFragment extends Fragment {
 
         updateFilterDisplay(currentFilter);
     }
+
     private void showFilterBottomSheet() {
         BottomSheetDialog dialog = new BottomSheetDialog(getContext());
         View view = getLayoutInflater().inflate(R.layout.bottom_filter_event, null);
 
-        view.findViewById(R.id.filterToday).setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.DAY, dialog));
-        view.findViewById(R.id.filterWeek).setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.WEEK, dialog));
-        view.findViewById(R.id.filterMonth).setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.MONTH, dialog));
-        view.findViewById(R.id.filterYear).setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.YEAR, dialog));
-        view.findViewById(R.id.filterAll).setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.ALL, dialog));
-        view.findViewById(R.id.filterRange).setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.RANGE, dialog));
+        view.findViewById(R.id.filterToday)
+                .setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.DAY, dialog));
+        view.findViewById(R.id.filterWeek)
+                .setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.WEEK, dialog));
+        view.findViewById(R.id.filterMonth)
+                .setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.MONTH, dialog));
+        view.findViewById(R.id.filterYear)
+                .setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.YEAR, dialog));
+        view.findViewById(R.id.filterAll)
+                .setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.ALL, dialog));
+        view.findViewById(R.id.filterRange)
+                .setOnClickListener(v -> applyFilter(PersonalTaskActivity.FilterType.RANGE, dialog));
 
         dialog.setContentView(view);
         dialog.show();
@@ -385,19 +409,18 @@ public class AllGroupEventsFragment extends Fragment {
 
                     if (isStart) {
                         rangeStart = chosen.getTimeInMillis();
-                        btnStartDate.setText("Bắt đầu: " + d + "/" + (m+1) + "/" + y);
+                        btnStartDate.setText("Bắt đầu: " + d + "/" + (m + 1) + "/" + y);
                     } else {
                         chosen.set(y, m, d, 23, 59, 59);
                         rangeEnd = chosen.getTimeInMillis();
-                        btnEndDate.setText("Kết thúc: " + d + "/" + (m+1) + "/" + y);
+                        btnEndDate.setText("Kết thúc: " + d + "/" + (m + 1) + "/" + y);
                     }
 
                     updateAllLists();
                 },
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
-                cal.get(Calendar.DAY_OF_MONTH)
-        );
+                cal.get(Calendar.DAY_OF_MONTH));
 
         dialog.show();
     }

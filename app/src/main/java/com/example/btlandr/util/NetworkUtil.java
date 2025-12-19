@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.util;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

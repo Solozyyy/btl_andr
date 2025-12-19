@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,6 +6,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.btlandr.R;
+import com.example.btlandr.model.Group;
+
 import java.util.List;
 
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHolder> {
@@ -37,7 +41,8 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         holder.adminEmail.setText("Quản lý: " + group.getAdminEmail());
 
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onGroupClick(group);
+            if (listener != null)
+                listener.onGroupClick(group);
         });
     }
 

@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +9,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.btlandr.R;
+import com.example.btlandr.activity.HomeActivity;
+import com.example.btlandr.activity.RegisterActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -56,22 +60,22 @@ public class LoginActivity extends AppCompatActivity {
 
             // Đăng nhập bàng email, pass trên Firebase
             auth.signInWithEmailAndPassword(email, pass)
-            .addOnSuccessListener(result -> {
-                // Lưu đăng nhập
-                SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("uid", FirebaseAuth.getInstance().getCurrentUser().getUid());
-                editor.putBoolean("isLoggedIn", true);
-                editor.apply();
+                    .addOnSuccessListener(result -> {
+                        // Lưu đăng nhập
+                        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString("uid", FirebaseAuth.getInstance().getCurrentUser().getUid());
+                        editor.putBoolean("isLoggedIn", true);
+                        editor.apply();
 
-                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, HomeActivity.class));
-//                startActivity(new Intent(this, ScheduleActivity.class));
-                finish();
-            })
-            .addOnFailureListener(e -> {
-                Toast.makeText(this, "Sai email hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
-            });
+                        Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(this, HomeActivity.class));
+                        // startActivity(new Intent(this, ScheduleActivity.class));
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Sai email hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
+                    });
         });
 
         // Chuyển sang màn hình đăng ký

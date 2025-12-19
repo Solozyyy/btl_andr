@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.app.*;
 import android.content.*;
@@ -6,6 +6,10 @@ import android.os.*;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.btlandr.R;
+
+import com.example.btlandr.model.Event;
+import com.example.btlandr.receiver.ReminderReceiver;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -113,10 +117,10 @@ public class AddGroupTaskActivity extends AppCompatActivity {
     }
 
     private void checkMembersImportantTasks(String title, String note, long startMillis, long endMillis,
-                                            boolean isImportant, List<String> members) {
+            boolean isImportant, List<String> members) {
         int totalMembers = members.size();
-        int[] checkedMembers = {0};
-        boolean[] hasConflict = {false};
+        int[] checkedMembers = { 0 };
+        boolean[] hasConflict = { false };
 
         for (String memberId : members) {
             // Lấy thông tin member trước
@@ -130,7 +134,8 @@ public class AddGroupTaskActivity extends AppCompatActivity {
                                 .whereEqualTo("important", true)
                                 .get()
                                 .addOnSuccessListener(personalSnapshot -> {
-                                    if (hasConflict[0]) return; // Đã có conflict rồi thì bỏ qua
+                                    if (hasConflict[0])
+                                        return; // Đã có conflict rồi thì bỏ qua
 
                                     // Kiểm tra xung đột với personal tasks
                                     for (QueryDocumentSnapshot doc : personalSnapshot) {
@@ -154,13 +159,15 @@ public class AddGroupTaskActivity extends AppCompatActivity {
                                     checkedMembers[0]++;
                                     if (checkedMembers[0] == totalMembers && !hasConflict[0]) {
                                         // Sau khi check xong personal tasks, kiểm tra group tasks
-                                        checkAllGroupImportantTasks(title, note, startMillis, endMillis, isImportant, members);
+                                        checkAllGroupImportantTasks(title, note, startMillis, endMillis, isImportant,
+                                                members);
                                     }
                                 })
                                 .addOnFailureListener(e -> {
                                     checkedMembers[0]++;
                                     if (checkedMembers[0] == totalMembers && !hasConflict[0]) {
-                                        checkAllGroupImportantTasks(title, note, startMillis, endMillis, isImportant, members);
+                                        checkAllGroupImportantTasks(title, note, startMillis, endMillis, isImportant,
+                                                members);
                                     }
                                 });
                     })
@@ -174,11 +181,11 @@ public class AddGroupTaskActivity extends AppCompatActivity {
     }
 
     private void checkAllGroupImportantTasks(String title, String note, long startMillis, long endMillis,
-                                             boolean isImportant, List<String> members) {
+            boolean isImportant, List<String> members) {
         // Lấy tất cả groups mà các members tham gia
         int totalMembers = members.size();
-        int[] checkedMembers = {0};
-        boolean[] hasConflict = {false};
+        int[] checkedMembers = { 0 };
+        boolean[] hasConflict = { false };
 
         for (String memberId : members) {
             // Lấy thông tin member
@@ -190,10 +197,11 @@ public class AddGroupTaskActivity extends AppCompatActivity {
                                 .whereArrayContains("members", memberId)
                                 .get()
                                 .addOnSuccessListener(groupSnapshot -> {
-                                    if (hasConflict[0]) return;
+                                    if (hasConflict[0])
+                                        return;
 
                                     int totalGroups = groupSnapshot.size();
-                                    int[] checkedGroups = {0};
+                                    int[] checkedGroups = { 0 };
 
                                     if (totalGroups == 0) {
                                         checkedMembers[0]++;
@@ -210,7 +218,8 @@ public class AddGroupTaskActivity extends AppCompatActivity {
                                                 .whereEqualTo("important", true)
                                                 .get()
                                                 .addOnSuccessListener(taskSnapshot -> {
-                                                    if (hasConflict[0]) return;
+                                                    if (hasConflict[0])
+                                                        return;
 
                                                     // Kiểm tra xung đột
                                                     for (QueryDocumentSnapshot taskDoc : taskSnapshot) {
@@ -218,7 +227,8 @@ public class AddGroupTaskActivity extends AppCompatActivity {
                                                         Long existingEnd = taskDoc.getLong("endTime");
 
                                                         if (existingStart != null && existingEnd != null) {
-                                                            if (isTimeOverlap(startMillis, endMillis, existingStart, existingEnd)) {
+                                                            if (isTimeOverlap(startMillis, endMillis, existingStart,
+                                                                    existingEnd)) {
                                                                 hasConflict[0] = true;
                                                                 String taskTitle = taskDoc.getString("title");
                                                                 String groupName = groupDoc.getString("groupName");
@@ -236,7 +246,8 @@ public class AddGroupTaskActivity extends AppCompatActivity {
                                                     if (checkedGroups[0] == totalGroups) {
                                                         checkedMembers[0]++;
                                                         if (checkedMembers[0] == totalMembers && !hasConflict[0]) {
-                                                            saveTaskToFirestore(title, note, startMillis, endMillis, isImportant);
+                                                            saveTaskToFirestore(title, note, startMillis, endMillis,
+                                                                    isImportant);
                                                         }
                                                     }
                                                 })
@@ -245,7 +256,8 @@ public class AddGroupTaskActivity extends AppCompatActivity {
                                                     if (checkedGroups[0] == totalGroups) {
                                                         checkedMembers[0]++;
                                                         if (checkedMembers[0] == totalMembers && !hasConflict[0]) {
-                                                            saveTaskToFirestore(title, note, startMillis, endMillis, isImportant);
+                                                            saveTaskToFirestore(title, note, startMillis, endMillis,
+                                                                    isImportant);
                                                         }
                                                     }
                                                 });
@@ -273,7 +285,8 @@ public class AddGroupTaskActivity extends AppCompatActivity {
     }
 
     private void saveTaskToFirestore(String title, String note, long startMillis, long endMillis, boolean isImportant) {
-        Event event = new Event(title, note, startMillis, endMillis, "Nhóm: " + groupName + "(" + adminEmail + ")", isImportant);
+        Event event = new Event(title, note, startMillis, endMillis, "Nhóm: " + groupName + "(" + adminEmail + ")",
+                isImportant);
 
         db.collection("Groups").document(groupId).collection("tasks")
                 .add(event)
@@ -304,8 +317,7 @@ public class AddGroupTaskActivity extends AppCompatActivity {
                 this,
                 (int) System.currentTimeMillis(),
                 intent,
-                PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_IMMUTABLE);
 
         am.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pi);
     }

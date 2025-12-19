@@ -1,9 +1,13 @@
-package com.example.btlandr;
+package com.example.btlandr.adapter;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
+
+import com.example.btlandr.fragment.AllGroupEventsFragment;
+import com.example.btlandr.fragment.MyManagedGroupsFragment;
+import com.example.btlandr.fragment.InvitedGroupsFragment;
 
 public class GroupPagerAdapter extends FragmentStateAdapter {
 

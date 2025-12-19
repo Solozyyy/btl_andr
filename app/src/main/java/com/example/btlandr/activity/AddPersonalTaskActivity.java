@@ -1,15 +1,20 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.app.*;
 import android.content.Intent;
 import android.os.*;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.btlandr.R;
+import com.example.btlandr.model.Event;
+import com.example.btlandr.util.NetworkUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.*;
 import java.text.SimpleDateFormat;
+import com.example.btlandr.receiver.ReminderReceiver;
 
 public class AddPersonalTaskActivity extends AppCompatActivity {
 
@@ -48,19 +53,18 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
 
     private void pickDateTime(boolean isStart) {
         Calendar cal = Calendar.getInstance();
-        new DatePickerDialog(this, (view, y, m, d) ->
-                new TimePickerDialog(this, (t, h, min) -> {
-                    cal.set(y, m, d, h, min);
-                    String formattedTime = formatDateTime(cal);
+        new DatePickerDialog(this, (view, y, m, d) -> new TimePickerDialog(this, (t, h, min) -> {
+            cal.set(y, m, d, h, min);
+            String formattedTime = formatDateTime(cal);
 
-                    if (isStart) {
-                        startMillis = cal.getTimeInMillis();
-                        startTimeText.setText(formattedTime);
-                    } else {
-                        endMillis = cal.getTimeInMillis();
-                        endTimeText.setText(formattedTime);
-                    }
-                }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show(),
+            if (isStart) {
+                startMillis = cal.getTimeInMillis();
+                startTimeText.setText(formattedTime);
+            } else {
+                endMillis = cal.getTimeInMillis();
+                endTimeText.setText(formattedTime);
+            }
+        }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show(),
                 cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
     }
 
@@ -118,7 +122,8 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
         checkTimeConflictWithImportantTasks(title, note, startMillis, endMillis, isImportant);
     }
 
-    private void checkTimeConflictWithImportantTasks(String title, String note, long startMillis, long endMillis, boolean isImportant) {
+    private void checkTimeConflictWithImportantTasks(String title, String note, long startMillis, long endMillis,
+            boolean isImportant) {
         // Bước 1: Kiểm tra Personal Important Tasks
         db.collection("UserAccount").document(uid).collection("events")
                 .whereEqualTo("important", true)
@@ -147,7 +152,8 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
                 });
     }
 
-    private void checkGroupImportantTasks(String title, String note, long startMillis, long endMillis, boolean isImportant) {
+    private void checkGroupImportantTasks(String title, String note, long startMillis, long endMillis,
+            boolean isImportant) {
         // Lấy tất cả groups mà user tham gia
         db.collection("Groups")
                 .whereArrayContains("members", uid)
@@ -161,8 +167,8 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
 
                     // Đếm số group cần kiểm tra
                     int totalGroups = groupSnapshot.size();
-                    int[] checkedGroups = {0};
-                    boolean[] hasConflict = {false};
+                    int[] checkedGroups = { 0 };
+                    boolean[] hasConflict = { false };
 
                     for (QueryDocumentSnapshot groupDoc : groupSnapshot) {
                         String checkGroupId = groupDoc.getId();
@@ -171,7 +177,8 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
                                 .whereEqualTo("important", true)
                                 .get()
                                 .addOnSuccessListener(taskSnapshot -> {
-                                    if (hasConflict[0]) return; // Đã có conflict rồi thì bỏ qua
+                                    if (hasConflict[0])
+                                        return; // Đã có conflict rồi thì bỏ qua
 
                                     // Kiểm tra xung đột
                                     for (QueryDocumentSnapshot taskDoc : taskSnapshot) {
@@ -182,7 +189,8 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
                                             if (isTimeOverlap(startMillis, endMillis, existingStart, existingEnd)) {
                                                 hasConflict[0] = true;
                                                 Toast.makeText(this,
-                                                        "⚠️ Thời gian trùng với task nhóm quan trọng: " + taskDoc.getString("title"),
+                                                        "⚠️ Thời gian trùng với task nhóm quan trọng: "
+                                                                + taskDoc.getString("title"),
                                                         Toast.LENGTH_LONG).show();
                                                 return;
                                             }
@@ -259,8 +267,7 @@ public class AddPersonalTaskActivity extends AppCompatActivity {
                 this,
                 (int) System.currentTimeMillis(),
                 intent,
-                PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_IMMUTABLE);
 
         am.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pi);
     }

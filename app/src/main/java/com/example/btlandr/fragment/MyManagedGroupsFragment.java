@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.fragment;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -16,6 +16,10 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.btlandr.R;
+import com.example.btlandr.activity.GroupDetailActivity;
+import com.example.btlandr.adapter.GroupAdapter;
+import com.example.btlandr.model.Group;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
@@ -35,8 +39,8 @@ public class MyManagedGroupsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_my_managed_groups, container, false);
 
@@ -114,8 +118,10 @@ public class MyManagedGroupsFragment extends Fragment {
 
             db.collection("Groups")
                     .add(group)
-                    .addOnSuccessListener(doc -> Toast.makeText(getContext(), "Tạo nhóm thành công!", Toast.LENGTH_SHORT).show())
-                    .addOnFailureListener(e -> Toast.makeText(getContext(), "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    .addOnSuccessListener(
+                            doc -> Toast.makeText(getContext(), "Tạo nhóm thành công!", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(
+                            e -> Toast.makeText(getContext(), "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
 
         builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());

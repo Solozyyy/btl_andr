@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.receiver;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;

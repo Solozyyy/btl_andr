@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.model;
 
 public class Event {
     private String id;

@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +8,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.btlandr.R;
+import com.example.btlandr.activity.LoginActivity;
+import com.example.btlandr.activity.PersonalTaskActivity;
+import com.example.btlandr.activity.GroupTaskActivity;
+import com.example.btlandr.activity.ProfileActivity;
+import com.example.btlandr.util.NetworkUtil;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class HomeActivity extends AppCompatActivity {

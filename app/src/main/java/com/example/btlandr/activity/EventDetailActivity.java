@@ -1,10 +1,13 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.btlandr.R;
+import com.example.btlandr.model.Event;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import java.text.SimpleDateFormat;
@@ -21,7 +24,6 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Setup Toolbar
 
-
         // Ánh xạ views
         TextView titleText = findViewById(R.id.detailTitle);
         TextView noteText = findViewById(R.id.detailNote);
@@ -31,7 +33,7 @@ public class EventDetailActivity extends AppCompatActivity {
         TextView durationText = findViewById(R.id.detailDuration);
         MaterialCardView noteCard = findViewById(R.id.noteCard);
         ImageView importantIcon = findViewById(R.id.importantIcon); // ⭐ Thêm icon
-        TextView importantText = findViewById(R.id.importantText);   // ⭐ Thêm text
+        TextView importantText = findViewById(R.id.importantText); // ⭐ Thêm text
         MaterialCardView importantCard = findViewById(R.id.importantCard); // ⭐ Thêm card
 
         // Lấy dữ liệu từ Intent
@@ -91,12 +93,14 @@ public class EventDetailActivity extends AppCompatActivity {
         }
 
         if (hours > 0) {
-            if (result.length() > 0) result.append(" ");
+            if (result.length() > 0)
+                result.append(" ");
             result.append(hours).append(" giờ");
         }
 
         if (minutes > 0) {
-            if (result.length() > 0) result.append(" ");
+            if (result.length() > 0)
+                result.append(" ");
             result.append(minutes).append(" phút");
         }
 

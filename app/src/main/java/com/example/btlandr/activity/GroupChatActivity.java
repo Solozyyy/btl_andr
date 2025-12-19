@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -11,6 +11,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.btlandr.R;
 
 import com.example.btlandr.adapter.ChatAdapter;
 import com.example.btlandr.model.ChatMessage;
@@ -33,7 +35,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private static final int PICK_FILE_REQUEST = 1;
     private static final int PICK_IMAGE_REQUEST = 2;
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    
+
     private String groupId;
     private String groupName;
     private FirebaseFirestore db;
@@ -80,7 +82,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
         // Initialize message list and adapter
         messagesList = new ArrayList<>();
-        chatAdapter = new ChatAdapter(this, R.layout.item_chat_message, messagesList, 
+        chatAdapter = new ChatAdapter(this, R.layout.item_chat_message, messagesList,
                 currentUser != null ? currentUser.getUid() : "");
         messagesListView.setAdapter(chatAdapter);
 
@@ -101,7 +103,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
         // Listen for group name changes
         listenForGroupNameChanges();
-        
+
         // Listen for messages
         listenForMessages();
     }
@@ -109,8 +111,9 @@ public class GroupChatActivity extends AppCompatActivity {
     private void listenForGroupNameChanges() {
         db.collection("Groups").document(groupId)
                 .addSnapshotListener((snapshot, e) -> {
-                    if (e != null || snapshot == null || !snapshot.exists()) return;
-                    
+                    if (e != null || snapshot == null || !snapshot.exists())
+                        return;
+
                     String newGroupName = snapshot.getString("groupName");
                     if (newGroupName != null && !newGroupName.equals(groupName)) {
                         groupName = newGroupName;
@@ -139,7 +142,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
     private void sendMessage() {
         String message = messageInput.getText().toString().trim();
-        
+
         if (message.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập tin nhắn", Toast.LENGTH_SHORT).show();
             return;
@@ -182,8 +185,10 @@ public class GroupChatActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot doc : value) {
                             ChatMessage chatMessage = new ChatMessage();
                             chatMessage.setId(doc.getId());
-                            chatMessage.setSenderUid(doc.getString("senderUid") != null ? doc.getString("senderUid") : "");
-                            chatMessage.setSenderName(doc.getString("senderName") != null ? doc.getString("senderName") : "Ẩn danh");
+                            chatMessage
+                                    .setSenderUid(doc.getString("senderUid") != null ? doc.getString("senderUid") : "");
+                            chatMessage.setSenderName(
+                                    doc.getString("senderName") != null ? doc.getString("senderName") : "Ẩn danh");
                             chatMessage.setMessage(doc.getString("message") != null ? doc.getString("message") : "");
                             chatMessage.setTimestamp(doc.getLong("timestamp") != null ? doc.getLong("timestamp") : 0);
                             messagesList.add(chatMessage);
@@ -217,7 +222,8 @@ public class GroupChatActivity extends AppCompatActivity {
         if (requestCode == PICK_FILE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri fileUri = data.getData();
             uploadFile(fileUri);
-        } else if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+        } else if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null
+                && data.getData() != null) {
             Uri imageUri = data.getData();
             uploadImage(imageUri);
         }
@@ -257,7 +263,8 @@ public class GroupChatActivity extends AppCompatActivity {
                         });
                     })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(GroupChatActivity.this, "Lỗi upload: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(GroupChatActivity.this, "Lỗi upload: " + e.getMessage(), Toast.LENGTH_SHORT)
+                                .show();
                     });
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -292,7 +299,8 @@ public class GroupChatActivity extends AppCompatActivity {
                         });
                     })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(GroupChatActivity.this, "Lỗi upload: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(GroupChatActivity.this, "Lỗi upload: " + e.getMessage(), Toast.LENGTH_SHORT)
+                                .show();
                     });
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();

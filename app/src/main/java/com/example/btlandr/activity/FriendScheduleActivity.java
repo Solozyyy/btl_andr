@@ -1,10 +1,14 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.widget.*;
+
+import com.example.btlandr.R;
+import com.example.btlandr.adapter.EventAdapter;
+import com.example.btlandr.model.Event;
 import com.google.firebase.firestore.*;
 import java.util.*;
 
@@ -39,7 +43,8 @@ public class FriendScheduleActivity extends AppCompatActivity {
         db.collection("UserAccount").document(uid).collection("events")
                 .orderBy("startTime", Query.Direction.ASCENDING)
                 .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) return;
+                    if (e != null)
+                        return;
                     eventList.clear();
                     for (QueryDocumentSnapshot doc : snapshots) {
                         Event event = doc.toObject(Event.class);

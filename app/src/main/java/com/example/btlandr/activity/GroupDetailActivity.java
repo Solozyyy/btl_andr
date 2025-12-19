@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -6,6 +6,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.btlandr.R;
+import com.example.btlandr.activity.AddGroupTaskActivity;
+import com.example.btlandr.activity.GroupChatActivity;
+import com.example.btlandr.adapter.MemberAdapter;
+import com.example.btlandr.model.Event;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 import java.util.*;
@@ -13,7 +19,8 @@ import java.util.*;
 public class GroupDetailActivity extends AppCompatActivity {
 
     private TextView groupNameText, adminEmailText;
-    private Button deleteGroupButton, addMemberButton, addGroupTaskButton, groupChatButton, renameGroupButton, zoomMeetingButton;
+    private Button deleteGroupButton, addMemberButton, addGroupTaskButton, groupChatButton, renameGroupButton,
+            zoomMeetingButton;
     private ListView membersListView;
 
     private LinearLayout containerOngoing, containerUpcoming, containerPast;
@@ -98,14 +105,15 @@ public class GroupDetailActivity extends AppCompatActivity {
     private void loadMembers() {
         db.collection("Groups").document(groupId)
                 .addSnapshotListener((doc, e) -> {
-                    if (e != null || doc == null || !doc.exists()) return;
-                    
+                    if (e != null || doc == null || !doc.exists())
+                        return;
+
                     // Cập nhật tên nhóm realtime
                     String groupName = doc.getString("groupName");
                     if (groupName != null) {
                         groupNameText.setText("Tên nhóm: " + groupName);
                     }
-                    
+
                     List<String> members = (List<String>) doc.get("members");
                     memberUids.clear();
                     memberInfos.clear();
@@ -153,8 +161,8 @@ public class GroupDetailActivity extends AppCompatActivity {
                                     addMemberToGroup(newUid);
                                 }
                             })
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            .addOnFailureListener(
+                                    e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 })
                 .setNegativeButton("Huỷ", null)
                 .show();
@@ -199,10 +207,9 @@ public class GroupDetailActivity extends AppCompatActivity {
         groupRef.update("members", FieldValue.arrayRemove(uidToRemove))
                 .addOnSuccessListener(a -> {
                     Toast.makeText(this, "Đã xóa thành viên!", Toast.LENGTH_SHORT).show();
-                    //showMembersList(); // Reload danh sách sau khi xóa
+                    // showMembersList(); // Reload danh sách sau khi xóa
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     // -------------------- 🔸 DELETE GROUP --------------------
@@ -222,8 +229,7 @@ public class GroupDetailActivity extends AppCompatActivity {
                     Toast.makeText(this, "Đã xoá nhóm!", Toast.LENGTH_SHORT).show();
                     finish(); // ✅ Quay lại trang trước
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     // -------------------- 🔸 ZOOM MEETING --------------------
@@ -277,7 +283,8 @@ public class GroupDetailActivity extends AppCompatActivity {
                     startActivity(intent);
                 })
                 .setNeutralButton("Sao chép link", (d, w) -> {
-                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(
+                            CLIPBOARD_SERVICE);
                     android.content.ClipData clip = android.content.ClipData.newPlainText("Zoom Link", meetingLink);
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(this, "Đã sao chép link!", Toast.LENGTH_SHORT).show();
@@ -311,7 +318,8 @@ public class GroupDetailActivity extends AppCompatActivity {
         db.collection("Groups").document(groupId).collection("tasks")
                 .orderBy("startTime", Query.Direction.ASCENDING)
                 .addSnapshotListener((snapshots, e) -> {
-                    if (e != null || snapshots == null) return;
+                    if (e != null || snapshots == null)
+                        return;
 
                     long now = System.currentTimeMillis();
 
@@ -382,7 +390,8 @@ public class GroupDetailActivity extends AppCompatActivity {
                 .setPositiveButton("Lưu", (dialog, which) -> {
                     String newName = input.getText().toString().trim();
                     if (newName.isEmpty()) {
-                        Toast.makeText(GroupDetailActivity.this, "Tên nhóm không được trống", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(GroupDetailActivity.this, "Tên nhóm không được trống", Toast.LENGTH_SHORT)
+                                .show();
                     } else {
                         updateGroupName(newName);
                     }
@@ -393,10 +402,11 @@ public class GroupDetailActivity extends AppCompatActivity {
 
     private void updateGroupName(String newName) {
         db.collection("Groups").document(groupId)
-                .update("groupName", newName)
+                .update("name", newName)
                 .addOnSuccessListener(a -> {
                     Toast.makeText(this, "Đã cập nhật tên nhóm!", Toast.LENGTH_SHORT).show();
-                    // Không cần cập nhật thủ công - realtime listener sẽ tự động cập nhật
+                    groupNameText.setText(newName);
+                    // Firestore realtime listener trong MyManagedGroupsFragment sẽ tự động cập nhật
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }

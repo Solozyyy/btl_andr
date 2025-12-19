@@ -1,4 +1,4 @@
-package com.example.btlandr;
+package com.example.btlandr.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,8 @@ import android.widget.Toast;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.btlandr.R;
+import com.example.btlandr.activity.LoginActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -50,26 +52,26 @@ public class RegisterActivity extends AppCompatActivity {
                 Toast.makeText(this, "Mật khẩu không trùng khớp!", Toast.LENGTH_SHORT).show();
             } else {
                 auth.createUserWithEmailAndPassword(email, pass)
-                .addOnSuccessListener(result -> {
-                    String uid = result.getUser().getUid();
+                        .addOnSuccessListener(result -> {
+                            String uid = result.getUser().getUid();
 
-                    // Lưu thông tin user vào Firestore
-                    Map<String, Object> userData = new HashMap<>();
-                    userData.put("username", username);
-                    userData.put("email", email);
-                    userData.put("createdAt", System.currentTimeMillis());
+                            // Lưu thông tin user vào Firestore
+                            Map<String, Object> userData = new HashMap<>();
+                            userData.put("username", username);
+                            userData.put("email", email);
+                            userData.put("createdAt", System.currentTimeMillis());
 
-                    db.collection("UserAccount").document(uid)
-                    .set(userData)
-                    .addOnSuccessListener(a -> {
-                        Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(this, LoginActivity.class));
-                        finish();
-                    });
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                            db.collection("UserAccount").document(uid)
+                                    .set(userData)
+                                    .addOnSuccessListener(a -> {
+                                        Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(this, LoginActivity.class));
+                                        finish();
+                                    });
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
             }
         });
 
